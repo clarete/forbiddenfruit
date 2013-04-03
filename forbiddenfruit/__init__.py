@@ -39,3 +39,8 @@ def patchable_builtin(klass):
 def curse(klass, attr, value):
     dikt = patchable_builtin(klass)
     dikt[attr] = value
+
+
+def reverse(klass, attr):
+    dikt = patchable_builtin(klass)
+    del dikt[attr]

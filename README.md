@@ -27,6 +27,20 @@ you want to add a `classmethod` to a built-in class? No problem, just do this:
 >>> assert str.hello() == "blah"
 ```
 
+### Reversing a curse
+
+If you want to free your object a curse, you can use the `reverse()`
+function. Just like this:
+
+```python
+>>> from forbiddenfruit import curse, reverse
+>>> curse(str, "test", "blah")
+>>> assert 'test' in dir(str)
+>>> # Time to reverse the curse
+>>> reverse(str, "test")
+>>> assert 'test' not in dir(str)
+```
+
 ## Compatibility
 
 Forbidden Fruit runs on all cpython versions I tested so far, which includes
