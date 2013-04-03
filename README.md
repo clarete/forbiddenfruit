@@ -1,5 +1,7 @@
 # Forbidden Fruit
 
+![Forbidden Fruit](logo.png)
+
 This project aims to give you the way to find heaven in tests, but it might
 lead you to hell if you use it on production code.
 
