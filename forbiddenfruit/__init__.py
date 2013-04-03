@@ -1,6 +1,9 @@
 import ctypes
 
 
+__version__ = '0.1.0'
+
+
 class PyObject(ctypes.Structure):
     pass
 
