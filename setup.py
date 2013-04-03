@@ -28,8 +28,8 @@ if __name__ == '__main__':
         version='0.1.9',
         description='Patch python built-in objects',
         long_description=local_file('README.md'),
-        author=u'Lincoln de Sousa',
-        author_email=u'lincoln@comum.org',
+        author='Lincoln de Sousa',
+        author_email='lincoln@comum.org',
         url='https://github.com/clarete/forbiddenfruit',
         packages=find_packages(exclude='*tests*'),
     )
