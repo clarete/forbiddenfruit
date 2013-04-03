@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/clarete/forbiddenfruit.png)](https://travis-ci.org/clarete/forbiddenfruit)
+
 # Forbidden Fruit
 
 ![Forbidden Fruit](logo.png)
