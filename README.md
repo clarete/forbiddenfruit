@@ -4,8 +4,8 @@
 
 ![Forbidden Fruit](logo.png)
 
-This project aims to give you the way to find heaven in tests, but it might
-lead you to hell if you use it on production code.
+This project aims to help you reach heaven while writing tests, but it
+may lead you to hell if used on production code.
 
 It basically allows you to patch built-in objects, declared in C through
 python. Just like this:
@@ -46,9 +46,9 @@ function. Just like this:
 ## Compatibility
 
 Forbidden Fruit runs on all cpython versions I tested so far, which includes
-the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since it depends fundamentally on the
-C API to implement its basic feature, this library won't work on other python
-implementations such as Jython, pypy, etc.
+the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since Forbidden Fruit is fundamentally
+dependent on the C API, this library won't work on other python
+implementations, such as Jython, pypy, etc.
 
 I might add support for pypy in the future, but It's unlikely that I'll do it
 for Jython. But I could happily accept patches for them.
