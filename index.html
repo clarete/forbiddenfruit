@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <link href='https://fonts.googleapis.com/css?family=Chivo:900' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <title>Forbiddenfruit by clarete</title>
+  </head>
+
+  <body>
+    <div id="container">
+      <div class="inner">
+
+        <header>
+          <h1>Forbiddenfruit</h1>
+          <h2>Patch built-in python objects</h2>
+        </header>
+
+        <section id="downloads" class="clearfix">
+          <a href="https://github.com/clarete/forbiddenfruit/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
+          <a href="https://github.com/clarete/forbiddenfruit/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+          <a href="https://github.com/clarete/forbiddenfruit" id="view-on-github" class="button"><span>View on GitHub</span></a>
+        </section>
+
+        <hr>
+
+        <section id="main_content">
+          <h1>Forbidden Fruit</h1>
+
+<p><img src="https://raw.github.com/clarete/forbiddenfruit/master/logo.png?login=clarete&amp;token=19afcca33ff63d2ba6b2ef474ad3a12a" alt="Forbidden Fruit"></p>
+
+<p>This project aims to give you the way to find heaven in tests, but it might
+lead you to hell if you use it on production code.</p>
+
+<p>It basically allows you to patch built-in objects, declared in C through
+python. Just like this:</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">forbiddenfruit</span> <span class="kn">import</span> <span class="n">curse</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">words_of_wisdom</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">return</span> <span class="bp">self</span> <span class="o">*</span> <span class="s">"blah "</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">curse</span><span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="s">"words_of_wisdom"</span><span class="p">,</span> <span class="n">words_of_wisdom</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">assert</span> <span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">words_of_wisdom</span><span class="p">()</span> <span class="o">==</span> <span class="s">"blah blah "</span>
+</pre></div>
+
+<p>Boom! That's it, your <code>int</code> class now has the <code>words_of_wisdom</code> method. Do
+you want to add a <code>classmethod</code> to a built-in class? No problem, just do this:</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">forbiddenfruit</span> <span class="kn">import</span> <span class="n">curse</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">def</span> <span class="nf">hello</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="o">...</span>     <span class="k">return</span> <span class="s">"blah"</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">curse</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s">"hello"</span><span class="p">,</span> <span class="nb">classmethod</span><span class="p">(</span><span class="n">hello</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">assert</span> <span class="nb">str</span><span class="o">.</span><span class="n">hello</span><span class="p">()</span> <span class="o">==</span> <span class="s">"blah"</span>
+</pre></div>
+
+<h3>Reversing a curse</h3>
+
+<p>If you want to free your object a curse, you can use the <code>reverse()</code>
+function. Just like this:</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">from</span> <span class="nn">forbiddenfruit</span> <span class="kn">import</span> <span class="n">curse</span><span class="p">,</span> <span class="n">reverse</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">curse</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s">"test"</span><span class="p">,</span> <span class="s">"blah"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">assert</span> <span class="s">'test'</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># Time to reverse the curse</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">reverse</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="s">"test"</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">assert</span> <span class="s">'test'</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+</pre></div>
+
+<h2>Compatibility</h2>
+
+<p>Forbidden Fruit runs on all cpython versions I tested so far, which includes
+the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since it depends fundamentally on the
+C API to implement its basic feature, this library won't work on other python
+implementations such as Jython, pypi, etc.</p>
+
+<p>I might add support for pypi in the future, but It's unlikely that I'll do it
+for Jython. But I could happily accept patches for them.</p>
+
+<h2>License</h2>
+
+<p>License (GPLv3)</p>
+
+<p>Copyright (C) 2013  Lincoln Clarete <a href="mailto:lincoln@comum.org">lincoln@comum.org</a></p>
+
+<p>This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.</p>
+
+<p>This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.</p>
+
+<p>You should have received a copy of the GNU General Public License
+along with this program.  If not, see <a href="http://www.gnu.org/licenses/">http://www.gnu.org/licenses/</a>.</p>
+
+<h3>Logo by</h3>
+
+<p>Kimberly Chandler, from The Noun Project</p>
+        </section>
+
+        <footer>
+          Forbiddenfruit is maintained by <a href="https://github.com/clarete">clarete</a><br>
+          This page was generated by <a href="http://pages.github.com">GitHub Pages</a>. Tactile theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.
+        </footer>
+
+                  <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-39810341-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+      </div>
+    </div>
+  </body>
+</html>
