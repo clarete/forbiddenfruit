@@ -31,5 +31,5 @@ if __name__ == '__main__':
         author='Lincoln de Sousa',
         author_email='lincoln@comum.org',
         url='https://github.com/clarete/forbiddenfruit',
-        packages=find_packages(exclude='*tests*'),
+        packages=find_packages(exclude=['*tests*']),
     )
