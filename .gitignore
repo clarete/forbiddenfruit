@@ -1,0 +1,9 @@
+*~
+*.pyc
+*.DS_Store
+*.egg-info
+*.log
+.coverage
+MANIFEST
+build/
+dist/
