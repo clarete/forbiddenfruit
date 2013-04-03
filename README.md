@@ -27,6 +27,16 @@ you want to add a `classmethod` to a built-in class? No problem, just do this:
 >>> assert str.hello() == "blah"
 ```
 
+## Compatibility
+
+Forbidden Fruit runs on all cpython versions I tested so far, which includes
+the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since it depends fundamentally on the
+C API to implement its basic feature, this library won't work on other python
+implementations such as Jython, pypi, etc.
+
+I might add support for pypi in the future, but It's unlikely that I'll do it
+for Jython. But I could happily accept patches for them.
+
 ## License
 
 License (GPLv3)
