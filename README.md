@@ -29,7 +29,7 @@ you want to add a `classmethod` to a built-in class? No problem, just do this:
 
 ### Reversing a curse
 
-If you want to free your object a curse, you can use the `reverse()`
+If you want to free your object from a curse, you can use the `reverse()`
 function. Just like this:
 
 ```python
