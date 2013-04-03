@@ -6,7 +6,7 @@
 #
 # <variables>
 PACKAGE=forbiddenfruit
-CUSTOM_PIP_INDEX=localshop
+CUSTOM_PIP_INDEX=
 # </variables>
 
 all: unit functional integration steadymark
