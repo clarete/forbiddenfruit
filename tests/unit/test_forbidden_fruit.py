@@ -38,3 +38,15 @@ def test_reversing_a_builtin():
 
     # Then I see that str won't contain
     assert 'stuff' not in dir(str)
+
+
+def test_cursing_something_twice_with_the_same_symbol():
+    # Given that I have a function
+    def func(cls):
+        return "blah"
+
+    # When I patch two different things with the same symbol
+    curse(str, 'lower', classmethod(func))
+
+    # Then I see that both of them were patched successfuly
+    assert str.lower() == "blah"
