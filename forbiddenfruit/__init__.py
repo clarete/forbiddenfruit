@@ -1,5 +1,6 @@
 import ctypes
-
+import __builtin__
+from functools import wraps
 
 __version__ = '0.1.0'
 
@@ -41,7 +42,17 @@ def patchable_builtin(klass):
     return namespace[name]
 
 
-def curse(klass, attr, value):
+@wraps(__builtin__.dir)
+def __filtered_dir__(obj=None):
+    return sorted(set(__dir__(obj)).difference(__hidden_elements__))
+
+# Switching to the custom dir impl declared above
+__hidden_elements__ = []
+__dir__ = dir
+__builtin__.dir = __filtered_dir__
+
+
+def curse(klass, attr, value, hide_from_dir=False):
     """Curse a built-in `klass` with `attr` set to `value`
 
     This function monkey-patches the built-in python object `attr` adding a new
@@ -66,6 +77,8 @@ def curse(klass, attr, value):
     """
     dikt = patchable_builtin(klass)
     dikt[attr] = value
+    if hide_from_dir:
+        __hidden_elements__.append(attr)
 
 
 def reverse(klass, attr):

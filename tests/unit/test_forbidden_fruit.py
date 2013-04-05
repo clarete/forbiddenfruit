@@ -50,3 +50,13 @@ def test_cursing_something_twice_with_the_same_symbol():
 
     # Then I see that both of them were patched successfuly
     assert str.lower() == "blah"
+
+
+def test_dir_filtering():
+    # Given that I curse the `str` built-in asking the curse to hide it from
+    # the built-in `dir()` function
+    curse(str, "my_stuff", "blah", hide_from_dir=True)
+
+    # Then I see that my new stuff is installed but without appearing on dir
+    assert str.my_stuff == "blah"
+    assert "my_stuff" not in dir(str)
