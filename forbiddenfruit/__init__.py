@@ -1,7 +1,12 @@
 import ctypes
-import __builtin__
 from functools import wraps
 from collections import defaultdict
+
+try:
+    import __builtin__
+except ImportError:
+    # Python 3 support
+    import builtins as __builtin__
 
 __version__ = '0.1.0'
 
