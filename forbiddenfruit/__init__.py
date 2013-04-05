@@ -45,7 +45,7 @@ def patchable_builtin(klass):
 
 @wraps(__builtin__.dir)
 def __filtered_dir__(obj=None):
-    name = obj.__name__
+    name = hasattr(obj, '__name__') and obj.__name__ or obj.__class__.__name__
     return sorted(set(__dir__(obj)).difference(__hidden_elements__[name]))
 
 # Switching to the custom dir impl declared above

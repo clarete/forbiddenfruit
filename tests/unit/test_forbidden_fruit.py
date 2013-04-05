@@ -75,3 +75,16 @@ def test_dir_filtering_same_symbol_different_type():
 
     assert int.attr_x == "blah"
     assert "attr_x" in dir(int)
+
+
+def test_dir_filtering_same_symbol_different_instance():
+    # Given that I curse both `str` and `int` built-ins
+    curse(str, "attr_y", "stuff", hide_from_dir=True)
+    curse(int, "attr_y", "stuff")
+
+    # Then I see that the dir() thing also works for instances
+    assert "Hello".attr_y == "stuff"
+    assert "attr_y" not in dir("hello")
+
+    assert (1).attr_y == "stuff"
+    assert "attr_y" in dir(1)
