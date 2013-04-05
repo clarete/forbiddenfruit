@@ -1,6 +1,7 @@
 import ctypes
 import __builtin__
 from functools import wraps
+from collections import defaultdict
 
 __version__ = '0.1.0'
 
@@ -44,10 +45,11 @@ def patchable_builtin(klass):
 
 @wraps(__builtin__.dir)
 def __filtered_dir__(obj=None):
-    return sorted(set(__dir__(obj)).difference(__hidden_elements__))
+    name = obj.__name__
+    return sorted(set(__dir__(obj)).difference(__hidden_elements__[name]))
 
 # Switching to the custom dir impl declared above
-__hidden_elements__ = []
+__hidden_elements__ = defaultdict(list)
 __dir__ = dir
 __builtin__.dir = __filtered_dir__
 
@@ -78,7 +80,7 @@ def curse(klass, attr, value, hide_from_dir=False):
     dikt = patchable_builtin(klass)
     dikt[attr] = value
     if hide_from_dir:
-        __hidden_elements__.append(attr)
+        __hidden_elements__[klass.__name__].append(attr)
 
 
 def reverse(klass, attr):

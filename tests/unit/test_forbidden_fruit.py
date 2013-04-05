@@ -60,3 +60,18 @@ def test_dir_filtering():
     # Then I see that my new stuff is installed but without appearing on dir
     assert str.my_stuff == "blah"
     assert "my_stuff" not in dir(str)
+
+
+def test_dir_filtering_same_symbol_different_type():
+    # Given that I curse both `str` and `int` built-ins but only hide the new
+    # attribute from the one installed on `str`
+    curse(str, "attr_x", "blah", hide_from_dir=True)
+    curse(int, "attr_x", "blah")
+
+    # Then I see that both attributes were installed, but only one is filtered
+    # by dir
+    assert str.attr_x == "blah"
+    assert "attr_x" not in dir(str)
+
+    assert int.attr_x == "blah"
+    assert "attr_x" in dir(int)
