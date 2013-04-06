@@ -13,14 +13,13 @@ __version__ = '0.1.0'
 __all__ = 'curse', 'reverse'
 
 
-class PyObject(ctypes.Structure):
-    pass
-
-
 Py_ssize_t = \
     hasattr(ctypes.pythonapi, 'Py_InitModule4_64') \
     and ctypes.c_int64 or ctypes.c_int
 
+
+class PyObject(ctypes.Structure):
+    pass
 
 PyObject._fields_ = [
     ('ob_refcnt', Py_ssize_t),
@@ -33,18 +32,24 @@ class SlotsProxy(PyObject):
 
 
 def patchable_builtin(klass):
+    # It's important to create variables here, we want those objects alive
+    # within this whole scope.
     name = klass.__name__
-    target = getattr(klass, '__dict__', name)
+    target = klass.__dict__
 
+    # Hardcore introspection to find the `PyProxyDict` object that contains the
+    # precious `dict` attribute.
     proxy_dict = SlotsProxy.from_address(id(target))
     namespace = {}
 
+    # This is the way I found to `cast` this `proxy_dict.dict` into a python
+    # object, cause the `from_address()` function returns the `py_object`
+    # version
     ctypes.pythonapi.PyDict_SetItem(
         ctypes.py_object(namespace),
         ctypes.py_object(name),
         proxy_dict.dict,
     )
-
     return namespace[name]
 
 
@@ -83,7 +88,24 @@ def curse(klass, attr, value, hide_from_dir=False):
       "yoyo"
     """
     dikt = patchable_builtin(klass)
+
+    old_value = dikt.get(attr, None)
+    old_name = '_c_%s' % attr   # do not use .format here, it breaks py2.{5,6}
+    if old_value:
+        dikt[old_name] = old_value
+
     dikt[attr] = value
+
+    if old_value:
+        try:
+            dikt[attr].__name__ = old_value.__name__
+        except (AttributeError, TypeError):  # py2.5 will raise `TypeError`
+            pass
+        try:
+            dikt[attr].__qualname__ = old_value.__qualname__
+        except AttributeError:
+            pass
+
     if hide_from_dir:
         __hidden_elements__[klass.__name__].append(attr)
 

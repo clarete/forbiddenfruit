@@ -1,3 +1,4 @@
+from datetime import datetime
 from forbiddenfruit import curse, reverse
 
 
@@ -88,3 +89,14 @@ def test_dir_filtering_same_symbol_different_instance():
 
     assert (1).attr_y == "stuff"
     assert "attr_y" in dir(1)
+
+
+def test_built_in_attr_replacement():
+    # Given that I have a cursed object
+    curse(datetime, 'now', classmethod(lambda *p: False))
+
+    # Then I see that the method was replaced, but we still have the original
+    # method set as `_c_apppend`
+    assert '_c_now' in dir(datetime)
+    assert datetime.now() is False
+    assert datetime(2013, 4, 5).now() is False
