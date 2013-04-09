@@ -8,3 +8,4 @@ python:
 script: make
 install:
     - pip install -r development.txt
+    - python setup.py build
