@@ -25,7 +25,12 @@ Dummy_dealloc(Dummy *self)
 {
   Py_XDECREF(self->args);
   Py_XDECREF(self->kwargs);
+
+#if PY_MAJOR_VERSION < 3
   self->ob_type->tp_free((PyObject *) self);
+#else
+  Py_TYPE(self)->tp_free((PyObject*)self);
+#endif
 }
 
 
