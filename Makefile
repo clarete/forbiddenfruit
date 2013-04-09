@@ -33,7 +33,7 @@ steadymark:
 		steadymark; \
 	fi
 
-prepare: clean install_deps
+prepare: clean install_deps build_test_stub
 
 install_deps:
 	@if [ -z $$SKIP_DEPS ]; then \
@@ -42,9 +42,15 @@ install_deps:
 		[ -e development.txt ] && (pip install -r development.txt) 2>&1>>.build.log; \
 	fi
 
+build_test_stub:
+	@python setup.py build
+	@find ./build -name '*.so' -exec mv {} tests/unit \;
+
 clean:
 	@echo "Removing garbage..."
 	@find . -name '*.pyc' -delete
+	@find . -name '*.so' -delete
+	@find . -name __pycache__ -delete
 	@rm -rf .coverage *.egg-info *.log build dist MANIFEST
 
 publish:

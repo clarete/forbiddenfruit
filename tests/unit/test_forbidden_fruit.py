@@ -1,6 +1,9 @@
 from datetime import datetime
 from forbiddenfruit import curse, reverse
 
+# Our stub! :)
+from . import ffruit
+
 
 def test_cursing_a_builting_class():
 
@@ -41,18 +44,6 @@ def test_reversing_a_builtin():
     assert 'stuff' not in dir(str)
 
 
-def test_cursing_something_twice_with_the_same_symbol():
-    # Given that I have a function
-    def func(cls):
-        return "blah"
-
-    # When I patch two different things with the same symbol
-    curse(str, 'lower', classmethod(func))
-
-    # Then I see that both of them were patched successfuly
-    assert str.lower() == "blah"
-
-
 def test_dir_filtering():
     # Given that I curse the `str` built-in asking the curse to hide it from
     # the built-in `dir()` function
@@ -91,7 +82,7 @@ def test_dir_filtering_same_symbol_different_instance():
     assert "attr_y" in dir(1)
 
 
-def test_built_in_attr_replacement():
+def test_overriding_class_method():
     # Given that I have a cursed object
     curse(datetime, 'now', classmethod(lambda *p: False))
 
@@ -100,3 +91,14 @@ def test_built_in_attr_replacement():
     assert '_c_now' in dir(datetime)
     assert datetime.now() is False
     assert datetime(2013, 4, 5).now() is False
+
+
+def test_overriding_instance_method():
+    # Given that I have an instance of a `Dummy` object
+    obj = ffruit.Dummy()
+
+    # When I curse an instance method
+    curse(ffruit.Dummy, "my_method", lambda *a, **k: "Yo!")
+
+    # Then I see that my object was cursed properly
+    assert obj.my_method() == "Yo!"

@@ -16,8 +16,10 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 
+
+ffruit = Extension('ffruit', sources=['tests/unit/ffruit.c'])
 
 local_file = lambda f: \
     open(os.path.join(os.path.dirname(__file__), f)).read()
@@ -32,4 +34,5 @@ if __name__ == '__main__':
         author_email='lincoln@comum.org',
         url='https://github.com/clarete/forbiddenfruit',
         packages=find_packages(exclude=['*tests*']),
+        ext_modules=[ffruit],
     )

@@ -94,9 +94,9 @@ def curse(klass, attr, value, hide_from_dir=False):
     if old_value:
         dikt[old_name] = old_value
 
-    dikt[attr] = value
-
     if old_value:
+        dikt[attr] = value
+
         try:
             dikt[attr].__name__ = old_value.__name__
         except (AttributeError, TypeError):  # py2.5 will raise `TypeError`
@@ -105,6 +105,8 @@ def curse(klass, attr, value, hide_from_dir=False):
             dikt[attr].__qualname__ = old_value.__qualname__
         except AttributeError:
             pass
+    else:
+        dikt[attr] = value
 
     if hide_from_dir:
         __hidden_elements__[klass.__name__].append(attr)
