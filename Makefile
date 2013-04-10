@@ -29,17 +29,15 @@ run_test:
 	fi
 
 steadymark:
-	@if hash steadymark 2>/dev/null; then \
-		steadymark; \
-	fi
+	@hash steadymark &> /dev/null && steadymark; echo  # This echo tells the shell that everything worked :P
 
 prepare: clean install_deps build_test_stub
 
 install_deps:
 	@if [ -z $$SKIP_DEPS ]; then \
 		echo "Installing missing dependencies..."; \
-		[ -e requirements.txt ] && (pip install -r requirements.txt) 2>&1>>.build.log; \
-		[ -e development.txt ] && (pip install -r development.txt) 2>&1>>.build.log; \
+		[ -e requirements.txt ] && pip install -r requirements.txt &> .build.log; \
+		[ -e development.txt  ] && pip install -r development.txt  &> .build.log; \
 	fi
 
 build_test_stub:
