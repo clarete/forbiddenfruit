@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/clarete/forbiddenfruit.png)](https://travis-ci.org/clarete/forbiddenfruit)
+[![Build Status](https://travis-ci.org/clarete/forbiddenfruit.png?branch=master)](https://travis-ci.org/clarete/forbiddenfruit)
 
 # Forbidden Fruit
 
