@@ -102,3 +102,35 @@ def test_overriding_instance_method():
 
     # Then I see that my object was cursed properly
     assert obj.my_method() == "Yo!"
+
+
+def test_overriding_non_c_things():
+    "The `curse` function should not blow up on non-c python objs"
+
+    # Given that I have an instance of a python class
+    class Yo(object):
+        pass
+
+    obj = Yo()
+
+    # When I curse an instance method
+    curse(Yo, "my_method", lambda *a, **k: "Yo" * 2)
+
+    # Then I see that my object was cursed properly
+    assert obj.my_method() == "YoYo"
+
+
+def test_overriding_things_on_modules():
+    "The `curse` function should not blow up when cursing modules"
+
+    # Given that I have an instance of a python class
+    obj = {'a': 1, 'b': 2}
+
+    # When I curse an instance method
+    curse(dict, "pop", lambda self, key: self[key])
+
+    # Then I see that my object was cursed properly
+    assert obj.pop('a') == 1
+    assert obj.pop('b') == 2
+    assert 'a' in obj
+    assert 'b' in obj
