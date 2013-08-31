@@ -142,7 +142,7 @@ def test_curses_decorator():
     # Given that I have a decorated func
     @curses(str, 'md_title')
     def markdown_title(self):
-        return '# {}'.format(self.title())
+        return '# {0}'.format(self.title())
 
     # Then I see the `str` class was patched
     assert "lincoln".md_title() == "# Lincoln"
