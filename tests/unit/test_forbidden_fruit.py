@@ -120,8 +120,8 @@ def test_overriding_non_c_things():
     assert obj.my_method() == "YoYo"
 
 
-def test_overriding_things_on_modules():
-    "The `curse` function should not blow up when cursing modules"
+def test_overriding_dict_pop():
+    "The `curse` function should be able to curse existing symbols"
 
     # Given that I have an instance of a python class
     obj = {'a': 1, 'b': 2}
