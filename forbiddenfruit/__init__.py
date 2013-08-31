@@ -8,7 +8,7 @@ except ImportError:
     # Python 3 support
     import builtins as __builtin__
 
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 __all__ = 'curse', 'reverse'
 
