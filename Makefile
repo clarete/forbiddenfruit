@@ -24,7 +24,7 @@ run_test:
 	@if [ -d tests/$(suite) ]; then \
 		echo "Running \033[0;32m$(suite)\033[0m test suite"; \
 		make prepare; \
-		nosetests --rednose --stop --with-coverage --cover-package=$(PACKAGE) \
+		nosetests --stop --with-coverage --cover-package=$(PACKAGE) \
 			--cover-branches --verbosity=2 -s tests/$(suite) ; \
 	fi
 
