@@ -136,3 +136,22 @@ def reverse(klass, attr):
     """
     dikt = patchable_builtin(klass)
     del dikt[attr]
+
+
+def curses(klass, name):
+    """Decorator to add decorated method named `name` the class `klass`
+
+    So you can use it like this:
+
+        >>> @curses(dict, 'banner')
+        ... def dict_banner(self):
+        ...     l = len(self)
+        ...     print('This dict has {0} element{1}'.format(
+        ...         l, l is 1 and '' or 's')
+        >>> {'a': 1, 'b': 2}.banner()
+        'This dict has 2 elements'
+    """
+    def wrapper(func):
+        curse(klass, name, func)
+        return func
+    return wrapper

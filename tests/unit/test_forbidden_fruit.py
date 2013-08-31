@@ -1,5 +1,5 @@
 from datetime import datetime
-from forbiddenfruit import curse, reverse
+from forbiddenfruit import curses, curse, reverse
 
 # Our stub! :)
 from . import ffruit
@@ -134,3 +134,15 @@ def test_overriding_things_on_modules():
     assert obj.pop('b') == 2
     assert 'a' in obj
     assert 'b' in obj
+
+
+def test_curses_decorator():
+    "curses() should curse a given klass with the decorated function"
+
+    # Given that I have a decorated func
+    @curses(str, 'md_title')
+    def markdown_title(self):
+        return '# {}'.format(self.title())
+
+    # Then I see the `str` class was patched
+    assert "lincoln".md_title() == "# Lincoln"
