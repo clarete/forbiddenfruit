@@ -76,3 +76,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 Kimberly Chandler, from The Noun Project
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/clarete/forbiddenfruit/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
