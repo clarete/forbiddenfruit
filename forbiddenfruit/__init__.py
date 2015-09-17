@@ -1,4 +1,5 @@
 import ctypes
+import inspect
 from functools import wraps
 from collections import defaultdict
 
@@ -56,6 +57,11 @@ def patchable_builtin(klass):
 @wraps(__builtin__.dir)
 def __filtered_dir__(obj=None):
     name = hasattr(obj, '__name__') and obj.__name__ or obj.__class__.__name__
+    if obj is None:
+        # Return names from the local scope of the calling frame, taking into
+        # account indirection added by __filtered_dir__
+        calling_frame = inspect.currentframe().f_back
+        return sorted(calling_frame.f_locals.keys())
     return sorted(set(__dir__(obj)).difference(__hidden_elements__[name]))
 
 # Switching to the custom dir impl declared above

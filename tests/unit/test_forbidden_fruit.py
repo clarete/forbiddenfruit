@@ -146,3 +146,18 @@ def test_curses_decorator():
 
     # Then I see the `str` class was patched
     assert "lincoln".md_title() == "# Lincoln"
+
+
+def test_dir_without_args_returns_names_in_local_scope():
+    """dir() without arguments should return the names from the local scope
+    of the calling frame, taking into account any indirection added
+    by __filtered_dir__
+    """
+
+    # Given that I have a local scope with some names bound to values
+    z = 1
+    some_name = 42
+
+    # Then I see that `dir()` correctly returns a sorted list of those names
+    assert 'some_name' in dir()
+    assert dir() == sorted(locals().keys())
