@@ -1,5 +1,5 @@
 from datetime import datetime
-from forbiddenfruit import curses, curse, reverse
+from forbiddenfruit import curses, curse, reverse, cursed
 
 # Our stub! :)
 from . import ffruit
@@ -161,3 +161,15 @@ def test_dir_without_args_returns_names_in_local_scope():
     # Then I see that `dir()` correctly returns a sorted list of those names
     assert 'some_name' in dir()
     assert dir() == sorted(locals().keys())
+
+
+def test_cursed():
+    "The `curse` function should be able to curse existing symbols"
+
+    # Given that I have an instance of a python class
+    obj = {'a': 1, 'b': 2}
+
+    # When I curse an instance method
+    with cursed(dict, "values", lambda self: 'surprise'):
+        # Then I see that my object was cursed properly
+        assert obj.values() == 'surprise'

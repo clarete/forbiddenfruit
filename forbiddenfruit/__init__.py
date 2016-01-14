@@ -2,6 +2,7 @@ import ctypes
 import inspect
 from functools import wraps
 from collections import defaultdict
+from contextlib import contextmanager
 
 try:
     import __builtin__
@@ -161,3 +162,11 @@ def curses(klass, name):
         curse(klass, name, func)
         return func
     return wrapper
+
+@contextmanager
+def cursed(obj, attr, val, hide_from_dir=False):
+    curse(obj, attr, val, hide_from_dir)
+    try:
+        yield
+    finally:
+        reverse(obj, attr)
