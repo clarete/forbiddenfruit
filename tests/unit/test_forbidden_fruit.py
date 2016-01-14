@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from forbiddenfruit import curses, curse, reverse
+from forbiddenfruit import cursed, curses, curse, reverse
 from types import FunctionType
 from nose.tools import nottest, istest
 
@@ -330,3 +330,39 @@ def test_dunder_reverse():
 
     reverse(TypeError, '__str__')
     assert str(te) == "testing"
+
+
+def test_cursed_context_manager():
+    "The `cursed` context manager should curse an existing symbols in a scope"
+
+    # Given that I have an instance of a python class
+    obj = {'a': 1, 'b': 2}
+
+    # When I curse an instance method
+    with cursed(dict, "open_box", lambda self: 'surprise'):
+        # Then I see that my object was cursed properly
+        assert obj.open_box() == 'surprise'
+
+    # And it was reversed
+    assert "open_box" not in dir(obj)
+    assert "open_box" not in dir(dict)
+
+
+@skip_legacy
+def test_cursed_decorator():
+    "The `cursed` decorator should curse an existing symbols during a function"
+
+    # Given that I have an instance of a python class
+    obj = {'a': 1, 'b': 2}
+
+    # When I curse an instance method using the decorator form of `cursed`
+    @cursed(dict, "open_box", lambda self: 'surprise')
+    def function():
+        # Then I see that my object was cursed properly
+        assert obj.open_box() == 'surprise'
+
+    function()
+
+    # And it was reversed
+    assert "open_box" not in dir(obj)
+    assert "open_box" not in dir(dict)
