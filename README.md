@@ -19,24 +19,37 @@ profiling](https://github.com/localstack/localstack/blob/e38eae0d1fe442924f4256d
 
 ## Tiny Example
 
-It basically allows you to patch built-in objects, declared in C
-through python. Just like this:
+It basically allows you to patch built-in objects, declared in C through
+python. Just like this:
 
 1. Add a new method to the `int` class:
+
 ```python
->>> from forbiddenfruit import curse
->>> def words_of_wisdom(self):
-...     return self * "blah "
->>> curse(int, "words_of_wisdom", words_of_wisdom)
->>> assert (2).words_of_wisdom() == "blah blah "
+from forbiddenfruit import curse
+
+
+def words_of_wisdom(self):
+    return self * "blah "
+
+
+curse(int, "words_of_wisdom", words_of_wisdom)
+
+assert (2).words_of_wisdom() == "blah blah "
 ```
-2. Add a `classmethod` to a built-in class
+
+2. Add a `classmethod` to the `str` class:
+
 ```python
->>> from forbiddenfruit import curse
->>> def hello(self):
-...     return "blah"
->>> curse(str, "hello", classmethod(hello))
->>> assert str.hello() == "blah"
+from forbiddenfruit import curse
+
+
+def hello(self):
+    return "blah"
+
+
+curse(str, "hello", classmethod(hello))
+
+assert str.hello() == "blah"
 ```
 
 ### Reversing a curse
@@ -45,12 +58,43 @@ If you want to free your object from a curse, you can use the `reverse()`
 function. Just like this:
 
 ```python
->>> from forbiddenfruit import curse, reverse
->>> curse(str, "test", "blah")
->>> assert 'test' in dir(str)
->>> # Time to reverse the curse
->>> reverse(str, "test")
->>> assert 'test' not in dir(str)
+from forbiddenfruit import curse, reverse
+
+curse(str, "test", "blah")
+assert 'test' in dir(str)
+
+# Time to reverse the curse
+reverse(str, "test")
+assert 'test' not in dir(str)
+```
+
+**Beware:** `reverse()` only deletes attributes. If you `curse()`'d to replace
+a pre-existing attribute, `reverse()` won't re-install the existing attribute.
+
+### Context Manager / Decorator
+
+`cursed()` acts as a context manager to make a `curse()`, and then `reverse()`
+it on exit. It uses
+[`contextlib.contextmanager()`](https://docs.python.org/3/library/contextlib.html#contextlib.contextmanager),
+so on Python 3.2+ it can also be used as a function decorator. Like so:
+
+```python
+from forbiddenfruit import cursed
+
+with cursed(str, "test", "blah"):
+    assert str.test == "blah"
+
+assert "test" not in dir(str)
+
+
+@cursed(str, "test", "blah")
+def function():
+    assert str.test == "blah"
+
+
+function()
+
+assert "test" not in dir(str)
 ```
 
 ## Compatibility
