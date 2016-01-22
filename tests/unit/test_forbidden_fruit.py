@@ -1,11 +1,97 @@
 from datetime import datetime
-from forbiddenfruit import curses, curse, reverse
+from forbiddenfruit import curses, curse, reverse, uncurse
 
 # Our stub! :)
 from . import ffruit
 
 
-def test_cursing_a_builting_class():
+from datetime import datetime
+from forbiddenfruit import curses, curse, reverse, uncurse
+
+# Our stub! :)
+from . import ffruit
+
+
+# NOTE: uncursing tests are done first as to not be corrupted by the other
+# tests which do NOT restore the overwritten/added patched objects
+
+
+def test_uncursing_a_builtin_class():
+
+    # Given that I have a function that returns *blah*
+    def words_of_widom(self):
+        return self * "blah "
+        
+    # And I curse a built-in class with that function
+    curse(int, "words_of_wisdom", words_of_widom)
+    
+    # And I see that the class was cursed
+    assert (2).words_of_wisdom() == "blah blah "
+    assert 'words_of_wisdom' in dir(int)
+    
+    # Then I uncurse that class
+    uncurse(int, "words_of_wisdom")
+    
+    # And I see that the class was uncursed
+    assert 'words_of_wisdom' not in dir(int)
+    
+    
+def test_uncursing_a_builtin_class_with_a_class_method():
+    # Given that I have a function that returns *blah*
+    def hello(self):
+        return "blah"
+        
+    # And I curse a built-in class with that function
+    curse(str, "hello", classmethod(hello))
+    
+    # And I see that the class was cursed
+    assert str.hello() == "blah"
+    assert 'hello' in dir(str)
+    
+    # Then I uncurse that class
+    uncurse(str, "hello")
+    
+    # And I see that the class was uncursed
+    assert 'hello' not in dir(str)
+    
+    
+def test_restoring_class_method():
+    # Given that I havea cursed object
+    curse(datetime, 'now', classmethod(lambda *p: False))
+    
+    # And I see that the method was replaced with the original method set
+    # as '_c_append'
+    assert '_c_now' in dir(datetime)
+    assert datetime.now() is False
+    assert datetime(2013, 4, 5).now() is False
+    
+    # Then I restore that method
+    uncurse(datetime, 'now')
+    
+    # And I see that the method was restored
+    assert '_c_now' not in dir(datetime)
+    assert datetime.now() is not False
+    assert datetime(2013, 4, 5).now() is not False
+    
+    
+def test_restoring_instance_method():
+    # Given that I have an instance of a `Dummy` object
+    obj = ffruit.Dummy()
+
+    # And I curse an instance method
+    curse(ffruit.Dummy, "my_method", lambda *a, **k: "Yo!")
+
+    # And I see that my object was cursed properly
+    assert obj.my_method() == "Yo!"
+    
+    # Then I restore the object
+    uncurse(ffruit.Dummy, "my_method")
+    
+    # And I see that the object was restored
+    assert obj.my_method() == ((), {})
+
+
+def test_cursing_a_builtin_class():
 
     # Given that I have a function that returns *blah*
     def words_of_wisdom(self):
@@ -19,7 +105,7 @@ def test_cursing_a_builting_class():
     assert 'words_of_wisdom' in dir(int)
 
 
-def test_cursing_a_builting_class_with_a_class_method():
+def test_cursing_a_builtin_class_with_a_class_method():
 
     # Given that I have a function that returns *blah*
     def hello(self):
