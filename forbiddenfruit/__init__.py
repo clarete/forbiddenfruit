@@ -97,10 +97,9 @@ def curse(klass, attr, value, hide_from_dir=False):
 
     old_value = dikt.get(attr, None)
     old_name = '_c_%s' % attr   # do not use .format here, it breaks py2.{5,6}
-    if old_value:
-        dikt[old_name] = old_value
 
     if old_value:
+        dikt[old_name] = old_value
         dikt[attr] = value
 
         try:
@@ -113,6 +112,14 @@ def curse(klass, attr, value, hide_from_dir=False):
             pass
     else:
         dikt[attr] = value
+        
+        # This is needed, otherwise the unit tests blow up when using uncurse().
+        # Not sure why. Maybe somebody wiser in the ways of Python internals
+        # will figure it out. All I know is that as long as __dict__ is
+        # accessed (either here or in the 
+        # test_uncursing_a_builtin_class_with_a_class_method test), things work.
+        # This behavior was see in Python v2.7.10.
+        _ = klass.__dict__
 
     if hide_from_dir:
         __hidden_elements__[klass.__name__].append(attr)
@@ -161,3 +168,35 @@ def curses(klass, name):
         curse(klass, name, func)
         return func
     return wrapper
+
+
+def uncurse(klass, attr):
+    """Uncurse a cursed object
+    
+    This function restores an attribute to the condition it was before it was
+    cursed. Whereas reverse() will remove any specified attribute, uncurse()
+    will reset existing attributes back to the original value.
+    
+    Example:
+
+      >>> from datetime import datetime
+      >>> from forbiddenfruit import curse, uncurse
+      >>> def mydate(self):
+      ...     return 'foo'
+      >>> curse(datetime, 'now', classmethod(mydate))
+      >>> datetime.now()
+      foo
+      >>> uncurse(datetime, 'now')
+      >>> datetime.now()
+      >>> datetime.datetime(...)
+    """
+    
+    dikt = patchable_builtin(klass)
+    old_name = '_c_%s' % attr   # do not use .format here, it breaks py2.{5,6}
+
+    if old_name in dikt:
+        dikt[attr] = dikt[old_name]
+        del dikt[old_name]
+    else:
+        del dikt[attr]
+

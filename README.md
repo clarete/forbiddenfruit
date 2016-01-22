@@ -43,6 +43,21 @@ function. Just like this:
 >>> assert 'test' not in dir(str)
 ```
 
+### Uncursing a curse
+
+If you want to restore your object as it was before a curse, you can use the `uncurse()`
+function. Just like this:
+
+```python
+>>> from datetime import datetime
+>>> def mydate(self):
+...     return 'foo'
+>>> curse(datetime, "now", classmethod(mydate))
+>>> assert datetime.now() == "foo"
+>>> uncurse(datetime, "now")
+>>> assert datetime.now() == datetime.datetime(...)
+```
+
 ## Compatibility
 
 Forbidden Fruit runs on all cpython versions I tested so far, which includes
