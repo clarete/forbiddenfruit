@@ -27,7 +27,7 @@ local_file = lambda f: \
 if __name__ == '__main__':
     setup(
         name='forbiddenfruit',
-        version='0.1.1',
+        version='0.1.2',
         description='Patch python built-in objects',
         long_description=local_file('README.md'),
         author='Lincoln de Sousa',
