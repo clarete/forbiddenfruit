@@ -11,7 +11,7 @@ except ImportError:
 
 __version__ = '0.1.1'
 
-__all__ = 'curse', 'reverse'
+__all__ = 'curse', 'curses', 'reverse'
 
 
 Py_ssize_t = \
