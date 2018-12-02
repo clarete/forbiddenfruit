@@ -1,3 +1,4 @@
 include README.md
 include COPYING
 include requirements.txt
+graft tests
