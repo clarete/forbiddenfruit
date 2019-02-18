@@ -1,3 +1,5 @@
+import sys
+from types import FunctionType
 import ctypes
 import inspect
 from functools import wraps
@@ -14,18 +16,121 @@ __version__ = '0.1.2'
 __all__ = 'curse', 'curses', 'reverse'
 
 
-Py_ssize_t = \
-    hasattr(ctypes.pythonapi, 'Py_InitModule4_64') \
-    and ctypes.c_int64 or ctypes.c_int
+Py_ssize_t = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else 4
+
+# dictionary holding references to the allocated function resolution
+# arrays to type objects
+tp_as_dict = {}
+# container to cfunc callbacks
+tp_func_dict = {}
 
 
 class PyObject(ctypes.Structure):
     pass
 
+def make_opaque_ptr(name):
+    newcls = type(name, (ctypes.Structure,), {})
+    return ctypes.POINTER(newcls)
+
+
+#PyObject_p = ctypes.POINTER(PyObject)
+PyObject_p = ctypes.py_object
+Inquiry_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p)
+UnaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p)
+BinaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p)
+TernaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, PyObject_p)
+FILE_p = make_opaque_ptr('FILE')
+
+varhead_size = sys.getsizeof(()) - ctypes.sizeof(ctypes.c_void_p)
+
+class PyNumberMethods(ctypes.Structure):
+    _fields_ = [
+    ('nb_add', BinaryFunc_p),
+    ('nb_subtract', BinaryFunc_p),
+    ('nb_multiply', BinaryFunc_p),
+    ('nb_remainder', BinaryFunc_p),
+    ('nb_divmod', BinaryFunc_p),
+    ('nb_power', BinaryFunc_p),
+    ('nb_negative', UnaryFunc_p),
+    ('nb_positive', UnaryFunc_p),
+    ('nb_absolute', UnaryFunc_p),
+    ('nb_bool', Inquiry_p),
+    ('nb_invert', UnaryFunc_p),
+    ('nb_lshift', BinaryFunc_p),
+    ('nb_rshift', BinaryFunc_p),
+    ('nb_and', BinaryFunc_p),
+    ('nb_xor', BinaryFunc_p),
+    ('nb_or', BinaryFunc_p),
+    ('nb_int', UnaryFunc_p),
+    ('nb_reserved', ctypes.c_void_p),
+    ('nb_float', UnaryFunc_p),
+
+    ('nb_inplace_add', BinaryFunc_p),
+    ('nb_inplace_subtract', BinaryFunc_p),
+    ('nb_inplace_multiply', BinaryFunc_p),
+    ('nb_inplace_remainder', BinaryFunc_p),
+    ('nb_inplace_power', TernaryFunc_p),
+    ('nb_inplace_lshift', BinaryFunc_p),
+    ('nb_inplace_rshift', BinaryFunc_p),
+    ('nb_inplace_and', BinaryFunc_p),
+    ('nb_inplace_xor', BinaryFunc_p),
+    ('nb_inplace_or', BinaryFunc_p),
+
+    ('nb_floor_divide', BinaryFunc_p),
+    ('nb_true_divide', BinaryFunc_p),
+    ('nb_inplace_floor_divide', BinaryFunc_p),
+    ('nb_inplace_true_divide', BinaryFunc_p),
+
+    ('nb_index', BinaryFunc_p),
+
+    ('nb_matrix_multiply', BinaryFunc_p),
+    ('nb_inplace_matrix_multiply', BinaryFunc_p),
+    ]
+
+class PySequenceMethods(ctypes.Structure):
+    pass
+
+class PyMappingMethods(ctypes.Structure):
+    pass
+
+class PyTypeObject(ctypes.Structure):
+    pass
+
+
 PyObject._fields_ = [
     ('ob_refcnt', Py_ssize_t),
-    ('ob_type', ctypes.POINTER(PyObject)),
+    ('ob_type', ctypes.POINTER(PyTypeObject)),
 ]
+
+PyTypeObject._fields_ = [
+    # varhead
+    ('ob_base', PyObject),
+    ('ob_size', Py_ssize_t),
+    # declaration
+    ('tp_name', ctypes.c_char_p),
+    ('tp_basicsize', Py_ssize_t),
+    ('tp_itemsize', Py_ssize_t),
+    ('tp_dealloc', ctypes.CFUNCTYPE(None, PyObject_p)),
+    ('printfunc', ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, FILE_p, ctypes.c_int)),
+    ('getattrfunc', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, ctypes.c_char_p)),
+    ('setattrfunc', ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, ctypes.c_char_p, PyObject_p)),
+    ('tp_as_async', make_opaque_ptr('PyAsyncMethods')),
+    ('tp_repr', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
+    ('tp_as_number', ctypes.POINTER(PyNumberMethods)),
+    ('tp_as_sequence', ctypes.POINTER(PySequenceMethods)),
+    ('tp_as_mapping', ctypes.POINTER(PyMappingMethods)),
+    # ...
+]
+
+
+# redundant dict of pointee types, because ctypes doesn't allow us
+# to extract the pointee type from the pointer
+PyTypeObject_as_types_dict = {
+    'tp_as_async': make_opaque_ptr('PyAsyncMethods'),
+    'tp_as_number': PyNumberMethods,
+    'tp_as_sequence': PySequenceMethods,
+    'tp_as_mapping': PyMappingMethods,
+}
 
 
 class SlotsProxy(PyObject):
@@ -69,6 +174,104 @@ __hidden_elements__ = defaultdict(list)
 __dir__ = dir
 __builtin__.dir = __filtered_dir__
 
+# build override infomation for dunder methods
+as_number = ('tp_as_number', [
+    ("add", "nb_add"),
+    ("sub", "nb_subtract"),
+    ("mul", "nb_multiply"),
+    ("mod", "nb_remainder"),
+    ("pow", "nb_power"),
+    ("neg", "nb_negative"),
+    ("pos", "nb_positive"),
+    ("abs", "nb_absolute"),
+    ("bool", "nb_bool"),
+    ("inv", "nb_invert"),
+    ("lshift", "nb_lshift"),
+    ("rshi", "nb_rshift"),
+    ("and", "nb_and"),
+    ("xor", "nb_xor"),
+    ("or", "nb_or"),
+    ("int", "nb_int"),
+    ("float", "nb_float"),
+    ("iadd", "nb_inplace_add"),
+    ("isub", "nb_inplace_subtract"),
+    ("imul", "nb_inplace_multiply"),
+    ("imod", "nb_inplace_remainder"),
+    ("ipow", "nb_inplace_power"),
+    ("ilshift", "nb_inplace_lshift"),
+    ("irshift", "nb_inplace_rshift"),
+    ("iadd", "nb_inplace_and"),
+    ("ixor", "nb_inplace_xor"),
+    ("ior", "nb_inplace_or"),
+    ("floordiv", "nb_floor_divide"),
+    ("div", "nb_true_divide"),
+    ("ifloordiv", "nb_inplace_floor_divide"),
+    ("idiv", "nb_inplace_true_divide"),
+    ("index", "nb_index"),
+    ("matmul", "nb_matrix_multiply"),
+    ("imatmul", "nb_inplace_matrix_multiply"),
+])
+
+as_sequence = ("tp_as_sequence", [
+    ("len", "sq_length"),
+    ("concat", "sq_concat"),
+    ("repeat", "sq_repeat"),
+    ("contains", "sq_contains"),
+    ("iconcat", "sq_inplace_concat"),
+    ("irepeat", "sq_inplace_repeat"),
+])
+
+as_async = ("tp_as_async", [
+    ("await", "am_await"),
+    ("aiter", "am_aiter"),
+    ("anext", "am_anext"),
+])
+
+override_dict = {}
+for override in [as_number]:
+    tp_as_name = override[0]
+    for dunder, impl_method in override[1]:
+        override_dict["__{}__".format(dunder)] = (tp_as_name, impl_method)
+
+# divmod isn't a dunder, still make it overridable
+override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
+
+def _curse_special(klass, attr, func):
+    """
+    Curse one of the "dunder" methods, i.e. methods beginning with __ which have a
+    precial resolution code path
+    """
+
+
+    assert isinstance(func, FunctionType)
+
+    tp_as_name, impl_method = override_dict[attr]
+
+    # get the pointer to the correct tp_as_* structure
+    # or create it if it doesn't exist
+    tyobj = PyTypeObject.from_address(id(klass))
+    tp_as_ptr = getattr(tyobj, tp_as_name)
+    struct_ty = PyTypeObject_as_types_dict[tp_as_name]
+    if not tp_as_ptr:
+        # allocate new array
+        tp_as_obj = struct_ty()
+        tp_as_dict[(klass, attr)] = tp_as_obj
+        tp_as_new_ptr = ctypes.cast(ctypes.addressof(tp_as_obj),
+            ctypes.POINTER(struct_ty))
+
+        setattr(tyobj, tp_as_name, tp_as_new_ptr)
+    tp_as = tp_as_ptr[0]
+
+
+    # find the C function type
+    for fname, ftype in struct_ty._fields_:
+        if fname == impl_method:
+            cfunc_t = ftype
+
+    cfunc = cfunc_t(func)
+    tp_func_dict[(klass, attr)] = cfunc
+
+    setattr(tp_as, impl_method, cfunc)
 
 def curse(klass, attr, value, hide_from_dir=False):
     """Curse a built-in `klass` with `attr` set to `value`
@@ -93,6 +296,12 @@ def curse(klass, attr, value, hide_from_dir=False):
       >>> "yo".hello()
       "yoyo"
     """
+    if attr.startswith("__") and attr.endswith("__"):
+        if sys.version_info < (3, 4):
+            raise NotImplementedError(
+                "Dunder overloading is only supported on Python >= 3.4")
+        _curse_special(klass, attr, value)
+
     dikt = patchable_builtin(klass)
 
     old_value = dikt.get(attr, None)
