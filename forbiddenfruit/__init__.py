@@ -5,6 +5,8 @@ import inspect
 from functools import wraps
 from collections import defaultdict
 
+from . import _forbiddenfruit
+
 try:
     import __builtin__
 except ImportError:
@@ -13,10 +15,11 @@ except ImportError:
 
 __version__ = '0.1.2'
 
-__all__ = 'curse', 'curses', 'reverse'
+__all__ = 'curse', 'curses', 'reverse', 'NotImplementedRet'
 
 
-Py_ssize_t = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else 4
+Py_ssize_t = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else ctypes.c_int32
+
 
 # dictionary holding references to the allocated function resolution
 # arrays to type objects
@@ -28,20 +31,19 @@ tp_func_dict = {}
 class PyObject(ctypes.Structure):
     pass
 
-def make_opaque_ptr(name):
-    newcls = type(name, (ctypes.Structure,), {})
-    return ctypes.POINTER(newcls)
+class PyFile(ctypes.Structure):
+    pass
 
-
-#PyObject_p = ctypes.POINTER(PyObject)
 PyObject_p = ctypes.py_object
 Inquiry_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p)
-UnaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p)
-BinaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p)
-TernaryFunc_p = ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, PyObject_p)
-FILE_p = make_opaque_ptr('FILE')
+UnaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p)
+BinaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, PyObject_p)
+TernaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, PyObject_p, PyObject_p)
+FILE_p = ctypes.POINTER(PyFile)
 
-varhead_size = sys.getsizeof(()) - ctypes.sizeof(ctypes.c_void_p)
+NotImplementedRet = _forbiddenfruit.get_not_implemented()
+
+extra_head_size = _forbiddenfruit.get_head_size()
 
 class PyNumberMethods(ctypes.Structure):
     _fields_ = [
@@ -96,8 +98,12 @@ class PyMappingMethods(ctypes.Structure):
 class PyTypeObject(ctypes.Structure):
     pass
 
+class PyAsyncMethods(ctypes.Structure):
+    pass
+
 
 PyObject._fields_ = [
+    ('extra_head', ctypes.c_char * extra_head_size),
     ('ob_refcnt', Py_ssize_t),
     ('ob_type', ctypes.POINTER(PyTypeObject)),
 ]
@@ -114,7 +120,7 @@ PyTypeObject._fields_ = [
     ('printfunc', ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, FILE_p, ctypes.c_int)),
     ('getattrfunc', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, ctypes.c_char_p)),
     ('setattrfunc', ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, ctypes.c_char_p, PyObject_p)),
-    ('tp_as_async', make_opaque_ptr('PyAsyncMethods')),
+    ('tp_as_async', ctypes.CFUNCTYPE(PyAsyncMethods)),
     ('tp_repr', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
     ('tp_as_number', ctypes.POINTER(PyNumberMethods)),
     ('tp_as_sequence', ctypes.POINTER(PySequenceMethods)),
@@ -126,7 +132,7 @@ PyTypeObject._fields_ = [
 # redundant dict of pointee types, because ctypes doesn't allow us
 # to extract the pointee type from the pointer
 PyTypeObject_as_types_dict = {
-    'tp_as_async': make_opaque_ptr('PyAsyncMethods'),
+    'tp_as_async': PyAsyncMethods,
     'tp_as_number': PyNumberMethods,
     'tp_as_sequence': PySequenceMethods,
     'tp_as_mapping': PyMappingMethods,
@@ -301,6 +307,7 @@ def curse(klass, attr, value, hide_from_dir=False):
             raise NotImplementedError(
                 "Dunder overloading is only supported on Python >= 3.4")
         _curse_special(klass, attr, value)
+        return
 
     dikt = patchable_builtin(klass)
 

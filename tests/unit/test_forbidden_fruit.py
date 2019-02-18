@@ -1,5 +1,5 @@
 from datetime import datetime
-from forbiddenfruit import curses, curse, reverse
+from forbiddenfruit import curses, curse, reverse, NotImplementedRet
 from types import FunctionType
 
 # Our stub! :)
@@ -167,8 +167,9 @@ def test_dir_without_args_returns_names_in_local_scope():
 def test_dunder_func_chaining():
     """Overload @ (matmul) operator to to chaining between functions"""
     def matmul_chaining(self, other):
+        if not isinstance(other, FunctionType):
+            return NotImplementedRet
         def wrapper(*args, **kwargs):
-            print(self)
             res = other(*args, **kwargs)
             if hasattr(res, "__iter__"):
                 return self(*res)
@@ -184,3 +185,16 @@ def test_dunder_func_chaining():
 
     for i in range(0, 10, 2):
         assert squared(i) == i ** 2
+
+
+def test_dunder_list_map():
+    def map_list(list_, func):
+        print(list_, func)
+        return map(func, list_)
+
+    curse(list, "__matmul__", map_list)
+
+    list_ = list(range(10))
+    times_2 = lambda x: x * 2
+
+    assert list(times_2 @ list_) == list(range(0, 20, 2))
