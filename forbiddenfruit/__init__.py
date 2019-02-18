@@ -187,7 +187,7 @@ as_number = ('tp_as_number', [
     ("bool", "nb_bool"),
     ("inv", "nb_invert"),
     ("lshift", "nb_lshift"),
-    ("rshi", "nb_rshift"),
+    ("rshift", "nb_rshift"),
     ("and", "nb_and"),
     ("xor", "nb_xor"),
     ("or", "nb_or"),
