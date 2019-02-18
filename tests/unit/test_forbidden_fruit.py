@@ -1,5 +1,6 @@
 from datetime import datetime
 from forbiddenfruit import curses, curse, reverse
+from types import FunctionType
 
 # Our stub! :)
 from . import ffruit
@@ -161,3 +162,25 @@ def test_dir_without_args_returns_names_in_local_scope():
     # Then I see that `dir()` correctly returns a sorted list of those names
     assert 'some_name' in dir()
     assert dir() == sorted(locals().keys())
+
+
+def test_dunder_func_chaining():
+    """Overload @ (matmul) operator to to chaining between functions"""
+    def matmul_chaining(self, other):
+        def wrapper(*args, **kwargs):
+            print(self)
+            res = other(*args, **kwargs)
+            if hasattr(res, "__iter__"):
+                return self(*res)
+            return self(res)
+
+        return wrapper
+
+    curse(FunctionType, "__matmul__", matmul_chaining)
+    f = lambda x, y: x * y
+    g = lambda x: (x, x)
+
+    squared = f @ g
+
+    for i in range(0, 10, 2):
+        assert squared(i) == i ** 2
