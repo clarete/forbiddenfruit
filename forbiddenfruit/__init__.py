@@ -5,7 +5,7 @@ import inspect
 from functools import wraps
 from collections import defaultdict
 
-from . import _forbiddenfruit
+from forbiddenfruit import _forbiddenfruit
 
 try:
     import __builtin__
@@ -242,6 +242,11 @@ for override in [as_number]:
 # divmod isn't a dunder, still make it overridable
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 
+
+def _is_dunder(func_name):
+    return func_name.startswith("__") and func_name.endswith("__")
+
+
 def _curse_special(klass, attr, func):
     """
     Curse one of the "dunder" methods, i.e. methods beginning with __ which have a
@@ -286,6 +291,23 @@ def _curse_special(klass, attr, func):
 
     setattr(tp_as, impl_method, cfunc)
 
+
+def _revert_special(klass, attr):
+    tp_as_name, impl_method = override_dict[attr]
+    tyobj = PyTypeObject.from_address(id(klass))
+    tp_as_ptr = getattr(tyobj, tp_as_name)
+    if tp_as_ptr:
+        tp_as = tp_as_ptr[0]
+
+        struct_ty = PyTypeObject_as_types_dict[tp_as_name]
+        for fname, ftype in struct_ty._fields_:
+            if fname == impl_method:
+                cfunc_t = ftype
+
+        setattr(tp_as, impl_method,
+            ctypes.cast(ctypes.c_void_p(None), cfunc_t))
+
+
 def curse(klass, attr, value, hide_from_dir=False):
     """Curse a built-in `klass` with `attr` set to `value`
 
@@ -309,7 +331,7 @@ def curse(klass, attr, value, hide_from_dir=False):
       >>> "yo".hello()
       "yoyo"
     """
-    if attr.startswith("__") and attr.endswith("__"):
+    if _is_dunder(attr):
         if sys.version_info < (3, 4):
             raise NotImplementedError(
                 "Dunder overloading is only supported on Python >= 3.4")
@@ -363,6 +385,9 @@ def reverse(klass, attr):
       AttributeError: 'str' object has no attribute 'strip'
 
     """
+    if _is_dunder(attr):
+        _revert_special(klass, attr)
+
     dikt = patchable_builtin(klass)
     del dikt[attr]
 
