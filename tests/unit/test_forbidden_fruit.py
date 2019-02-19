@@ -177,11 +177,11 @@ def test_dunder_func_chaining():
 
         return wrapper
 
-    curse(FunctionType, "__matmul__", matmul_chaining)
+    curse(FunctionType, "__mul__", matmul_chaining)
     f = lambda x, y: x * y
     g = lambda x: (x, x)
 
-    squared = f @ g
+    squared = f * g
 
     for i in range(0, 10, 2):
         assert squared(i) == i ** 2
@@ -189,14 +189,13 @@ def test_dunder_func_chaining():
 
 def test_dunder_list_map():
     def map_list(func, list_):
-        print("list", list_, func)
         if not callable(func):
             raise NotImplementedError()
         return map(func, list_)
 
-    curse(list, "__matmul__", map_list)
+    curse(list, "__mul__", map_list)
 
     list_ = list(range(10))
     times_2 = lambda x: x * 2
 
-    assert list(times_2 @ list_) == list(range(0, 20, 2))
+    assert list(times_2 * list_) == list(range(0, 20, 2))
