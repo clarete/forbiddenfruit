@@ -18,7 +18,7 @@ PyObject* get_not_implemented(PyObject* self, PyObject* args) {
 }
 
 static PyMethodDef FFruitMethods[] = {
-  {"get_extra_head_size",  get_extra_head_size, METH_NOARGS, "Get size of the PyObject_HEAD macro."},
+  {"get_extra_head_size",  get_extra_head_size, METH_NOARGS, "xo size of the PyObject_HEAD macro."},
   {"get_not_implemented",  get_not_implemented, METH_NOARGS, "Get the Py_NotImplemented object."},
   {NULL, NULL, 0, NULL}
 };
