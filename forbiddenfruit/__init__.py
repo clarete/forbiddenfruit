@@ -15,7 +15,7 @@ except ImportError:
 
 __version__ = '0.1.2'
 
-__all__ = 'curse', 'curses', 'reverse', 'NotImplementedRet'
+__all__ = 'curse', 'curses', 'reverse'
 
 
 Py_ssize_t = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else ctypes.c_int32
@@ -43,7 +43,7 @@ FILE_p = ctypes.POINTER(PyFile)
 
 NotImplementedRet = _forbiddenfruit.get_not_implemented()
 
-extra_head_size = _forbiddenfruit.get_head_size()
+extra_head_size = _forbiddenfruit.get_extra_head_size()
 
 class PyNumberMethods(ctypes.Structure):
     _fields_ = [
@@ -103,7 +103,7 @@ class PyAsyncMethods(ctypes.Structure):
 
 
 PyObject._fields_ = [
-    ('extra_head', ctypes.c_char * extra_head_size),
+    ('extra_head', ctypes.c_char * extra_head_size),  # skip PyObject_EXTRA_HEAD
     ('ob_refcnt', Py_ssize_t),
     ('ob_type', ctypes.POINTER(PyTypeObject)),
 ]
@@ -274,7 +274,14 @@ def _curse_special(klass, attr, func):
         if fname == impl_method:
             cfunc_t = ftype
 
-    cfunc = cfunc_t(func)
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except NotImplementedError:
+            return NotImplementedRet
+
+    cfunc = cfunc_t(wrapper)
     tp_func_dict[(klass, attr)] = cfunc
 
     setattr(tp_as, impl_method, cfunc)
