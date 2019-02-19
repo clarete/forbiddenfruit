@@ -199,3 +199,26 @@ def test_dunder_list_map():
     times_2 = lambda x: x * 2
 
     assert list(times_2 * list_) == list(range(0, 20, 2))
+
+
+def test_dunder_list_revert():
+    def map_list(func, list_):
+        if not callable(func):
+            raise NotImplementedError()
+        return map(func, list_)
+
+    curse(list, "__add__", map_list)
+
+    list_ = list(range(10))
+    times_2 = lambda x: x * 2
+
+    assert list(times_2 + list_) == list(range(0, 20, 2))
+
+    reverse(list, "__add__")
+    try:
+        times_2 + list_
+    except TypeError:
+        pass
+    else:
+        # should always raise an exception
+        assert False
