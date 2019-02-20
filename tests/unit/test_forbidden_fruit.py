@@ -243,6 +243,34 @@ def test_dunder_unary():
 
     assert almost_equal((~f)(10), f_(10))
 
+def test_sequence_dunder():
+    if skip_when(is_legacy): return
+
+    def derive_func(func, deriv_grad):
+        if deriv_grad == 0:
+            return func
+
+        e = 0.0000001
+        def wrapper(x):
+            return (func(x + e) - func(x - e)) / (2 * e)
+        if deriv_grad == 1:
+            return wrapper
+        return wrapper[deriv_grad - 1]
+
+    curse(FunctionType, "__getitem__", derive_func)
+
+    # a function an its derivations
+    f = lambda x: x ** 3 - 2 * x ** 2
+    f_1 = lambda x: 3 * x ** 2 - 4 * x
+    f_2 = lambda x: 6 * x - 4
+
+    for x in range(0, 10):
+        x = float(x) / 10.
+        assert almost_equal(f(x), f[0](x))
+        assert almost_equal(f_1(x), f[1](x))
+        # our hacky derivation becomes numerically unstable here
+        assert almost_equal(f_2(x), f[2](x), e=.01)
+
 
 def test_dunder_list_revert():
     """Test reversion of a curse with dunders"""

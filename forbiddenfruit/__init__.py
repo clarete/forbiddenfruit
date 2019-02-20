@@ -43,6 +43,10 @@ Inquiry_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p)
 UnaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p)
 BinaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, PyObject_p)
 TernaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, PyObject_p, PyObject_p)
+LenFunc_p = ctypes.CFUNCTYPE(Py_ssize_t, PyObject_p)
+SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, Py_ssize_t)
+SSizeObjArgProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, Py_ssize_t, PyObject_p)
+ObjObjProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p)
 
 FILE_p = ctypes.POINTER(PyFile)
 
@@ -95,7 +99,18 @@ class PyNumberMethods(ctypes.Structure):
     ]
 
 class PySequenceMethods(ctypes.Structure):
-    pass
+    _fields_ = [
+        ('sq_length', LenFunc_p),
+        ('sq_concat', BinaryFunc_p),
+        ('sq_repeat', SSizeArgFunc_p),
+        ('sq_item', SSizeArgFunc_p),
+        ('was_sq_slice', ctypes.c_void_p),
+        ('sq_ass_item', SSizeObjArgProc_p),
+        ('was_sq_ass_slice', ctypes.c_void_p),
+        ('sq_contains', ObjObjProc_p),
+        ('sq_inplace_concat', BinaryFunc_p),
+        ('sq_inplace_repeat', SSizeArgFunc_p),
+    ]
 
 class PyMappingMethods(ctypes.Structure):
     pass
@@ -226,6 +241,8 @@ as_sequence = ("tp_as_sequence", [
     ("len", "sq_length"),
     ("concat", "sq_concat"),
     ("repeat", "sq_repeat"),
+    ("getitem", "sq_item"),
+    ("setitem", "sq_ass_item"),
     ("contains", "sq_contains"),
     ("iconcat", "sq_inplace_concat"),
     ("irepeat", "sq_inplace_repeat"),
@@ -238,7 +255,7 @@ as_async = ("tp_as_async", [
 ])
 
 override_dict = {}
-for override in [as_number]:
+for override in [as_number, as_sequence, as_async]:
     tp_as_name = override[0]
     for dunder, impl_method in override[1]:
         override_dict["__{}__".format(dunder)] = (tp_as_name, impl_method)
