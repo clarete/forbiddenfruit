@@ -40,19 +40,33 @@ PyObject_p = ctypes.py_object
 Inquiry_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p)
 # return type is void* to allow ctypes to convert python integers to
 # plain PyObject*
-UnaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p)
-BinaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, PyObject_p)
-TernaryFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, PyObject_p, PyObject_p)
+UnaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p)
+BinaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, PyObject_p)
+TernaryFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, PyObject_p, PyObject_p)
 LenFunc_p = ctypes.CFUNCTYPE(Py_ssize_t, PyObject_p)
-SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.c_void_p, PyObject_p, Py_ssize_t)
+SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, Py_ssize_t)
 SSizeObjArgProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, Py_ssize_t, PyObject_p)
 ObjObjProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p)
 
 FILE_p = ctypes.POINTER(PyFile)
 
+
+def get_not_implemented():
+    namespace = {}
+    name = "_Py_NotImplmented"
+    not_implemented = ctypes.cast(
+        ctypes.pythonapi._Py_NotImplementedStruct, ctypes.py_object)
+
+    ctypes.pythonapi.PyDict_SetItem(
+        ctypes.py_object(namespace),
+        ctypes.py_object(name),
+        not_implemented
+    )
+    return namespace[name]
+
+
 # address of the _Py_NotImplementedStruct singleton
-NotImplementedRetAddr = ctypes.cast(
-    ctypes.pythonapi._Py_NotImplementedStruct, ctypes.c_void_p).value
+NotImplementedRet = get_not_implemented()
 
 class PyNumberMethods(ctypes.Structure):
     _fields_ = [
@@ -307,15 +321,9 @@ def _curse_special(klass, attr, func):
         python integer which is then converted to a pointer by ctypes
         """
         try:
-            ret = func(*args, **kwargs)
-            addr = id(ret)
-            ret_obj = PyObject.from_address(addr)
-            ret_obj.incref()
-            return addr
+            return func(*args, **kwargs)
         except NotImplementedError:
-            ret_ptr = PyObject.from_address(NotImplementedRetAddr)
-            ret_ptr.incref()
-            return NotImplementedRetAddr
+            return NotImplementedRet
 
     cfunc = cfunc_t(wrapper)
     tp_func_dict[(klass, attr)] = cfunc
