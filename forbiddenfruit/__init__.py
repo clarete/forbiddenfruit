@@ -346,9 +346,9 @@ def curse(klass, attr, value, hide_from_dir=False):
       "yoyo"
     """
     if _is_dunder(attr):
-        if sys.version_info < (3, 4):
+        if sys.version_info < (3, 3):
             raise NotImplementedError(
-                "Dunder overloading is only supported on Python >= 3.4")
+                "Dunder overloading is only supported on Python >= 3.3")
         _curse_special(klass, attr, value)
         return
 
