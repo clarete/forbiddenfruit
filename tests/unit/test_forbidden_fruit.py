@@ -6,6 +6,12 @@ from types import FunctionType
 from . import ffruit
 
 
+
+def almost_equal(a, b, e=0.001):
+    """Helper method to compare floats"""
+    return abs(a - b) < e
+
+
 def test_cursing_a_builting_class():
 
     # Given that I have a function that returns *blah*
@@ -199,6 +205,26 @@ def test_dunder_list_map():
     times_2 = lambda x: x * 2
 
     assert list(times_2 * list_) == list(range(0, 20, 2))
+
+
+def test_dunder_unary():
+    def derive_func(func):
+        e = 0.001
+        def wrapper(x):
+            """Poor man's derivation"""
+            x_0 = x - e
+            x_1 = x + e
+            y_delta = func(x_1) - func(x_0)
+            return y_delta / (2 * e)
+        return wrapper
+
+    curse(FunctionType, "__inv__", derive_func)
+
+    f = lambda x: x**2 + x
+    # true derivation
+    f_ = lambda x: 2*x + 1
+
+    assert almost_equal((~f)(10), f_(10))
 
 
 def test_dunder_list_revert():
