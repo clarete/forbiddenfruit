@@ -2,6 +2,7 @@ import sys
 from datetime import datetime
 from forbiddenfruit import curses, curse, reverse
 from types import FunctionType
+from nose.tools import nottest, istest
 
 # Our stub! :)
 from . import ffruit
@@ -13,13 +14,7 @@ def almost_equal(a, b, e=0.001):
     return abs(a - b) < e
 
 
-def skip_when(condition):
-    return condition()
-
-
-def is_legacy():
-    return sys.version_info < (3, 3)
-
+skip_legacy = nottest if sys.version_info < (3, 3) else istest
 
 def test_cursing_a_builting_class():
 
@@ -179,10 +174,9 @@ def test_dir_without_args_returns_names_in_local_scope():
     assert dir() == sorted(locals().keys())
 
 
+@skip_legacy
 def test_dunder_func_chaining():
     """Overload * (mul) operator to to chaining between functions"""
-    if skip_when(is_legacy): return
-
     def matmul_chaining(self, other):
         if not isinstance(other, FunctionType):
             raise NotImplementedError()
@@ -204,10 +198,9 @@ def test_dunder_func_chaining():
         assert squared(i) == i ** 2
 
 
+@skip_legacy
 def test_dunder_list_map():
     """Overload * (__mul__) operator to apply function to a list"""
-    if skip_when(is_legacy): return
-
     def map_list(func, list_):
         if not callable(func):
             raise NotImplementedError()
@@ -221,10 +214,9 @@ def test_dunder_list_map():
     assert list(times_2 * list_) == list(range(0, 20, 2))
 
 
+@skip_legacy
 def test_dunder_unary():
     """Overload ~ operator to compute a derivative of function"""
-    if skip_when(is_legacy): return
-
     def derive_func(func):
         e = 0.001
         def wrapper(x):
@@ -243,9 +235,9 @@ def test_dunder_unary():
 
     assert almost_equal((~f)(10), f_(10))
 
-def test_sequence_dunder():
-    if skip_when(is_legacy): return
 
+@skip_legacy
+def test_sequence_dunder():
     def derive_func(func, deriv_grad):
         if deriv_grad == 0:
             return func
@@ -272,10 +264,9 @@ def test_sequence_dunder():
         assert almost_equal(f_2(x), f[2](x), e=.01)
 
 
+@skip_legacy
 def test_dunder_list_revert():
     """Test reversion of a curse with dunders"""
-    if skip_when(is_legacy): return
-
     def map_list(func, list_):
         if not callable(func):
             raise NotImplementedError()
