@@ -9,7 +9,7 @@ PACKAGE=forbiddenfruit
 CUSTOM_PIP_INDEX=
 # </variables>
 
-all: unit functional integration steadymark
+all: unit functional integration
 
 unit:
 	@make run_test suite=unit
@@ -27,9 +27,6 @@ run_test:
 		nosetests --stop --with-coverage --cover-package=$(PACKAGE) \
 			--cover-branches --verbosity=2 -s tests/$(suite) ; \
 	fi
-
-steadymark:
-	@hash steadymark &> /dev/null && steadymark; echo  # This echo tells the shell that everything worked :P
 
 prepare: clean install_deps build_test_stub
 
