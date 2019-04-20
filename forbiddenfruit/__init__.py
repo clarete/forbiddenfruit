@@ -177,19 +177,14 @@ class SlotsProxy(PyObject):
 
 
 def patchable_builtin(klass):
-    # It's important to create variables here, we want those objects alive
-    # within this whole scope.
     name = klass.__name__
     target = klass.__dict__
 
-    # Hardcore introspection to find the `PyProxyDict` object that contains the
-    # precious `dict` attribute.
     proxy_dict = SlotsProxy.from_address(id(target))
     namespace = {}
 
-    # This is the way I found to `cast` this `proxy_dict.dict` into a python
-    # object, cause the `from_address()` function returns the `py_object`
-    # version
+    # This code casts `proxy_dict.dict` into a python object and
+    # `from_address()` returns `py_object`
     ctypes.pythonapi.PyDict_SetItem(
         ctypes.py_object(namespace),
         ctypes.py_object(name),
@@ -202,8 +197,8 @@ def patchable_builtin(klass):
 def __filtered_dir__(obj=None):
     name = hasattr(obj, '__name__') and obj.__name__ or obj.__class__.__name__
     if obj is None:
-        # Return names from the local scope of the calling frame, taking into
-        # account indirection added by __filtered_dir__
+        # Return names from the local scope of the calling frame,
+        # taking into account indirection added by __filtered_dir__
         calling_frame = inspect.currentframe().f_back
         return sorted(calling_frame.f_locals.keys())
     return sorted(set(__dir__(obj)).difference(__hidden_elements__[name]))
@@ -287,8 +282,6 @@ def _curse_special(klass, attr, func):
     Curse one of the "dunder" methods, i.e. methods beginning with __ which have a
     precial resolution code path
     """
-
-
     assert isinstance(func, FunctionType)
 
     tp_as_name, impl_method = override_dict[attr]
@@ -381,11 +374,13 @@ def curse(klass, attr, value, hide_from_dir=False):
 
     old_value = dikt.get(attr, None)
     old_name = '_c_%s' % attr   # do not use .format here, it breaks py2.{5,6}
-    if old_value:
-        dikt[old_name] = old_value
+
+    # Patch the thing
+    dikt[attr] = value
 
     if old_value:
-        dikt[attr] = value
+        hide_from_dir = False   # It was already in dir
+        dikt[old_name] = old_value
 
         try:
             dikt[attr].__name__ = old_value.__name__
@@ -395,8 +390,6 @@ def curse(klass, attr, value, hide_from_dir=False):
             dikt[attr].__qualname__ = old_value.__qualname__
         except AttributeError:
             pass
-    else:
-        dikt[attr] = value
 
     ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
 
