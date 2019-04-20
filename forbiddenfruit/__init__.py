@@ -398,6 +398,8 @@ def curse(klass, attr, value, hide_from_dir=False):
     else:
         dikt[attr] = value
 
+    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
+
     if hide_from_dir:
         __hidden_elements__[klass.__name__].append(attr)
 
@@ -429,6 +431,8 @@ def reverse(klass, attr):
 
     dikt = patchable_builtin(klass)
     del dikt[attr]
+
+    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
 
 
 def curses(klass, name):
