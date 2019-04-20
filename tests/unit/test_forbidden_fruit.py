@@ -288,3 +288,12 @@ def test_dunder_list_revert():
     else:
         # should always raise an exception
         assert False
+
+
+def test_cursing_a_reversed_curse():
+    curse(str, 'one', 1)
+    assert str.one == 1
+
+    reverse(str, 'one')
+    curse(str, 'one', 2)
+    assert str.one == 2
