@@ -200,6 +200,9 @@ PyTypeObject._fields_ = [
     ('tp_as_number', ctypes.POINTER(PyNumberMethods)),
     ('tp_as_sequence', ctypes.POINTER(PySequenceMethods)),
     ('tp_as_mapping', ctypes.POINTER(PyMappingMethods)),
+    ('tp_hash', ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)),
+    ('tp_call', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, PyObject_p)),
+    ('tp_str', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
     # ...
 ]
 
@@ -313,6 +316,7 @@ for override in [as_number, as_sequence, as_async]:
 
 # divmod isn't a dunder, still make it overridable
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
+override_dict['__str__'] = ('tp_str', "tp_str")
 
 
 def _is_dunder(func_name):
@@ -326,29 +330,6 @@ def _curse_special(klass, attr, func):
     """
     assert isinstance(func, FunctionType)
 
-    tp_as_name, impl_method = override_dict[attr]
-
-    # get the pointer to the correct tp_as_* structure
-    # or create it if it doesn't exist
-    tyobj = PyTypeObject.from_address(id(klass))
-    tp_as_ptr = getattr(tyobj, tp_as_name)
-    struct_ty = PyTypeObject_as_types_dict[tp_as_name]
-    if not tp_as_ptr:
-        # allocate new array
-        tp_as_obj = struct_ty()
-        tp_as_dict[(klass, attr)] = tp_as_obj
-        tp_as_new_ptr = ctypes.cast(ctypes.addressof(tp_as_obj),
-            ctypes.POINTER(struct_ty))
-
-        setattr(tyobj, tp_as_name, tp_as_new_ptr)
-    tp_as = tp_as_ptr[0]
-
-
-    # find the C function type
-    for fname, ftype in struct_ty._fields_:
-        if fname == impl_method:
-            cfunc_t = ftype
-
     @wraps(func)
     def wrapper(*args, **kwargs):
         """
@@ -360,26 +341,70 @@ def _curse_special(klass, attr, func):
         except NotImplementedError:
             return NotImplementedRet
 
-    cfunc = cfunc_t(wrapper)
-    tp_func_dict[(klass, attr)] = cfunc
+    tp_as_name, impl_method = override_dict[attr]
 
-    setattr(tp_as, impl_method, cfunc)
+    # get the pointer to the correct tp_as_* structure
+    # or create it if it doesn't exist
+    tyobj = PyTypeObject.from_address(id(klass))
+    if tp_as_name in PyTypeObject_as_types_dict:
+        struct_ty = PyTypeObject_as_types_dict[tp_as_name]
+        tp_as_ptr = getattr(tyobj, tp_as_name)
+        if not tp_as_ptr:
+            # allocate new array
+            tp_as_obj = struct_ty()
+            tp_as_dict[(klass, attr)] = tp_as_obj
+            tp_as_new_ptr = ctypes.cast(ctypes.addressof(tp_as_obj),
+                ctypes.POINTER(struct_ty))
 
+            setattr(tyobj, tp_as_name, tp_as_new_ptr)
+        tp_as = tp_as_ptr[0]
+
+        # find the C function type
+        for fname, ftype in struct_ty._fields_:
+            if fname == impl_method:
+                cfunc_t = ftype
+
+        cfunc = cfunc_t(wrapper)
+        tp_func_dict[(klass, attr)] = cfunc
+
+        setattr(tp_as, impl_method, cfunc)
+    else:
+        # find the C function type
+        for fname, ftype in PyTypeObject._fields_:
+            if fname == impl_method:
+                cfunc_t = ftype
+
+        if not (klass, attr) in tp_as_dict:
+            tp_as_dict[(klass, attr)] = ctypes.cast(getattr(tyobj, impl_method), cfunc_t)
+
+        # override function call
+        cfunc = cfunc_t(wrapper)
+        tp_func_dict[(klass, attr)] = cfunc
+        setattr(tyobj, impl_method, cfunc)
 
 def _revert_special(klass, attr):
     tp_as_name, impl_method = override_dict[attr]
     tyobj = PyTypeObject.from_address(id(klass))
     tp_as_ptr = getattr(tyobj, tp_as_name)
     if tp_as_ptr:
-        tp_as = tp_as_ptr[0]
+        if tp_as_name in PyTypeObject_as_types_dict:
+            tp_as = tp_as_ptr[0]
 
-        struct_ty = PyTypeObject_as_types_dict[tp_as_name]
-        for fname, ftype in struct_ty._fields_:
-            if fname == impl_method:
-                cfunc_t = ftype
+            struct_ty = PyTypeObject_as_types_dict[tp_as_name]
+            for fname, ftype in struct_ty._fields_:
+                if fname == impl_method:
+                    cfunc_t = ftype
 
-        setattr(tp_as, impl_method,
-            ctypes.cast(ctypes.c_void_p(None), cfunc_t))
+            setattr(tp_as, impl_method,
+                ctypes.cast(ctypes.c_void_p(None), cfunc_t))
+        else:
+            if not (klass, attr) in tp_as_dict:
+                # we didn't save this pointer
+                # most likely never cursed
+                return
+
+            cfunc = tp_as_dict[(klass, attr)]
+            setattr(tyobj, impl_method, cfunc)
 
 
 def curse(klass, attr, value, hide_from_dir=False):
@@ -463,6 +488,7 @@ def reverse(klass, attr):
     """
     if _is_dunder(attr):
         _revert_special(klass, attr)
+        return
 
     dikt = patchable_builtin(klass)
     del dikt[attr]

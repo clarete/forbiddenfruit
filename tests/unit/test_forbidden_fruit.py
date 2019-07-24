@@ -297,3 +297,22 @@ def test_cursing_a_reversed_curse():
     reverse(str, 'one')
     curse(str, 'one', 2)
     assert str.one == 2
+
+@skip_legacy
+def test_dunder_str():
+    assert str(1) == "1"
+    def always_one(self):
+        return 'one'
+    curse(int, '__str__', always_one)
+    assert str(1) == "one"
+
+@skip_legacy
+def test_dunder_reverse():
+    def type_error_str(self):
+        return 'type error'
+    curse(TypeError, '__str__', type_error_str)
+    te = TypeError("testing")
+    assert str(te) == "type error"
+
+    reverse(TypeError, '__str__')
+    assert str(te) == "testing"
