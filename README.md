@@ -4,12 +4,25 @@
 
 ![Forbidden Fruit](logo.png)
 
-This project aims to help you reach heaven while writing tests, but it
-may lead you to hell if used on production code.
+This project allows Python code to extend built-in types.
 
-It basically allows you to patch built-in objects, declared in C through
-python. Just like this:
+If that's a good idea or not, you tell me. The first need this project
+attended was allowing a [Python assertion
+library](https://github.com/gabrielfalcao/sure) to implement a similar
+API to [RSpec
+Expectations](https://github.com/rspec/rspec-expectations) and
+[should.js](https://shouldjs.github.io/). But people got creative and
+used it to among other things [spy on
+things](https://github.com/ikamensh/flynt/blob/43a64ac1a030be79741402d8920a6da253a96670/src/flynt/file_spy.py)
+or to [integrate
+profiling](https://github.com/localstack/localstack/blob/e38eae0d1fe442924f4256d4bc87710a4cb6f142/localstack/utils/analytics/profiler.py).
 
+## Tiny Example
+
+It basically allows you to patch built-in objects, declared in C
+through python. Just like this:
+
+1. Add a new method to the `int` class:
 ```python
 >>> from forbiddenfruit import curse
 >>> def words_of_wisdom(self):
@@ -17,10 +30,7 @@ python. Just like this:
 >>> curse(int, "words_of_wisdom", words_of_wisdom)
 >>> assert (2).words_of_wisdom() == "blah blah "
 ```
-
-Boom! That's it, your `int` class now has the `words_of_wisdom` method. Do
-you want to add a `classmethod` to a built-in class? No problem, just do this:
-
+2. Add a `classmethod` to a built-in class
 ```python
 >>> from forbiddenfruit import curse
 >>> def hello(self):
@@ -49,9 +59,6 @@ Forbidden Fruit runs on all cpython versions I tested so far, which includes
 the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since Forbidden Fruit is fundamentally
 dependent on the C API, this library won't work on other python
 implementations, such as Jython, pypy, etc.
-
-I might add support for pypy in the future, but It's unlikely that I'll do it
-for Jython. But I could happily accept patches for them.
 
 ## License
 
