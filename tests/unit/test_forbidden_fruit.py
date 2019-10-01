@@ -16,7 +16,7 @@ def almost_equal(a, b, e=0.001):
 
 skip_legacy = nottest if sys.version_info < (3, 3) else istest
 
-def test_cursing_a_builting_class():
+def test_cursing_a_builtin_class():
 
     # Given that I have a function that returns *blah*
     def words_of_wisdom(self):
@@ -30,7 +30,7 @@ def test_cursing_a_builting_class():
     assert 'words_of_wisdom' in dir(int)
 
 
-def test_cursing_a_builting_class_with_a_class_method():
+def test_cursing_a_builtin_class_with_a_class_method():
 
     # Given that I have a function that returns *blah*
     def hello(self):
