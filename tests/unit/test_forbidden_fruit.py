@@ -16,7 +16,7 @@ def almost_equal(a, b, e=0.001):
 
 skip_legacy = nottest if sys.version_info < (3, 3) else istest
 
-def test_cursing_a_builting_class():
+def test_cursing_a_builtin_class():
 
     # Given that I have a function that returns *blah*
     def words_of_wisdom(self):
@@ -30,7 +30,7 @@ def test_cursing_a_builting_class():
     assert 'words_of_wisdom' in dir(int)
 
 
-def test_cursing_a_builting_class_with_a_class_method():
+def test_cursing_a_builtin_class_with_a_class_method():
 
     # Given that I have a function that returns *blah*
     def hello(self):
@@ -42,6 +42,20 @@ def test_cursing_a_builting_class_with_a_class_method():
     # Then I see that the class was cursed
     assert str.hello() == "blah"
     assert 'hello' in dir(str)
+
+
+@skip_legacy
+def test_cursing_a_builtin_class_dunder_with_a_random_callable():
+    # Given that I have an object that returns *blah*
+    class Twelver(object):
+        def __call__(self, one, two):
+            return 12
+
+    # When I try to curse a built-in class's __sub__ with that function
+    curse(str, "__sub__", Twelver())
+
+    # Then I see that the class was cursed
+    assert ("hello" - "world") == 12
 
 
 def test_reversing_a_builtin():
