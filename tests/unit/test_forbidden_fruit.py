@@ -44,6 +44,19 @@ def test_cursing_a_builtin_class_with_a_class_method():
     assert 'hello' in dir(str)
 
 
+def test_cursing_a_builtin_class_dunder_with_a_random_callable():
+    # Given that I have an object that returns *blah*
+    class Twelver(object):
+        def __call__(self, one, two):
+            return 12
+
+    # When I try to curse a built-in class's __sub__ with that function
+    curse(str, "__sub__", Twelver())
+
+    # Then I see that the class was cursed
+    assert ("hello" - "world") == 12
+
+
 def test_reversing_a_builtin():
     # Given that I have a cursed object
     curse(str, 'stuff', property(lambda s: s * 2))
