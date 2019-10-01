@@ -44,6 +44,7 @@ def test_cursing_a_builtin_class_with_a_class_method():
     assert 'hello' in dir(str)
 
 
+@skip_legacy
 def test_cursing_a_builtin_class_dunder_with_a_random_callable():
     # Given that I have an object that returns *blah*
     class Twelver(object):
