@@ -55,10 +55,11 @@ function. Just like this:
 
 ## Compatibility
 
-Forbidden Fruit runs on all cpython versions I tested so far, which includes
-the versions 2.5, 2.6, 2.7, 3.2 and 3.3. Since Forbidden Fruit is fundamentally
-dependent on the C API, this library won't work on other python
-implementations, such as Jython, pypy, etc.
+Forbbiden Fruit is tested on CPython 2.7, 3.0, and 3.3-3.7.
+
+Since Forbidden Fruit is fundamentally dependent on the C API,
+this library won't work on other python implementations, such
+as Jython, pypy, etc.
 
 ## License
 
