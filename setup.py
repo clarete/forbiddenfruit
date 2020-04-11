@@ -44,8 +44,10 @@
 import os
 from setuptools import setup, find_packages, Extension
 
-
-ffruit = Extension('ffruit', sources=['tests/unit/ffruit.c'])
+if os.environ.get('FFRUIT_EXTENSION', '') == 'true':
+    ext_modules = [Extension('ffruit', sources=['tests/unit/ffruit.c'])]
+else:
+    ext_modules = []
 
 
 local_file = lambda f: \
@@ -61,7 +63,7 @@ if __name__ == '__main__':
         author_email='lincoln@clarete.li',
         url='https://github.com/clarete/forbiddenfruit',
         packages=find_packages(exclude=['*tests*']),
-        ext_modules=[ffruit],
+        ext_modules=ext_modules,
         classifiers=[
             'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
             'License :: OSI Approved :: MIT License',
