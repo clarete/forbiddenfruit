@@ -6,7 +6,7 @@ python:
   - 3.5
   - 3.6
   - 3.7
-script: FFRUIT_EXTENSION=true make
+script: make
 install:
     - pip install -r development.txt
     - python setup.py build

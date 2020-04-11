@@ -7,6 +7,7 @@
 # <variables>
 PACKAGE=forbiddenfruit
 CUSTOM_PIP_INDEX=
+export FFRUIT_EXTENSION=true
 # </variables>
 
 all: unit functional integration
