@@ -57,6 +57,7 @@ if __name__ == '__main__':
         version='0.1.3',
         description='Patch python built-in objects',
         long_description=local_file('README.md'),
+        long_description_content_type='text/markdown',
         author='Lincoln de Sousa',
         author_email='lincoln@clarete.li',
         url='https://github.com/clarete/forbiddenfruit',
