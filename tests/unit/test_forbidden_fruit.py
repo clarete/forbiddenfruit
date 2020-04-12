@@ -330,3 +330,16 @@ def test_dunder_reverse():
 
     reverse(TypeError, '__str__')
     assert str(te) == "testing"
+
+@skip_legacy
+def test_overriding_getattr():
+    """Overload __getattr__ for dicts to lookup a key"""
+    def getter(self, x):
+        try:
+            return object.__getattribute__(self, x)
+        except AttributeError:
+            return self[x]
+    curse(dict, "__getattr__", getter)
+
+    my_dict = {"abc": "xyz"}
+    assert(my_dict.abc == "xyz")
