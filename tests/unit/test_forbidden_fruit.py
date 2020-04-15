@@ -2,19 +2,16 @@ import sys
 from datetime import datetime
 from forbiddenfruit import cursed, curses, curse, reverse
 from types import FunctionType
-from nose.tools import nottest, istest
+import pytest
 
 # Our stub! :)
 from . import ffruit
-
 
 
 def almost_equal(a, b, e=0.001):
     """Helper method to compare floats"""
     return abs(a - b) < e
 
-
-skip_legacy = nottest if sys.version_info < (3, 3) else istest
 
 def test_cursing_a_builtin_class():
 
@@ -44,7 +41,7 @@ def test_cursing_a_builtin_class_with_a_class_method():
     assert 'hello' in dir(str)
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_cursing_a_builtin_class_dunder_with_a_random_callable():
     # Given that I have an object that returns *blah*
     class Twelver(object):
@@ -186,10 +183,10 @@ def test_dir_without_args_returns_names_in_local_scope():
 
     # Then I see that `dir()` correctly returns a sorted list of those names
     assert 'some_name' in dir()
-    assert dir() == sorted(locals().keys())
+    assert 'z' in dir()
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_func_chaining():
     """Overload * (mul) operator to to chaining between functions"""
     def matmul_chaining(self, other):
@@ -213,7 +210,7 @@ def test_dunder_func_chaining():
         assert squared(i) == i ** 2
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_list_map():
     """Overload * (__mul__) operator to apply function to a list"""
     def map_list(func, list_):
@@ -229,7 +226,7 @@ def test_dunder_list_map():
     assert list(times_2 * list_) == list(range(0, 20, 2))
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_unary():
     """Overload ~ operator to compute a derivative of function"""
     def derive_func(func):
@@ -251,7 +248,7 @@ def test_dunder_unary():
     assert almost_equal((~f)(10), f_(10))
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_sequence_dunder():
     def derive_func(func, deriv_grad):
         if deriv_grad == 0:
@@ -279,7 +276,7 @@ def test_sequence_dunder():
         assert almost_equal(f_2(x), f[2](x), e=.01)
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_list_revert():
     """Test reversion of a curse with dunders"""
     def map_list(func, list_):
@@ -312,7 +309,8 @@ def test_cursing_a_reversed_curse():
     curse(str, 'one', 2)
     assert str.one == 2
 
-@skip_legacy
+
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_str():
     assert str(1) == "1"
     def always_one(self):
@@ -320,7 +318,8 @@ def test_dunder_str():
     curse(int, '__str__', always_one)
     assert str(1) == "one"
 
-@skip_legacy
+
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_dunder_reverse():
     def type_error_str(self):
         return 'type error'
@@ -348,7 +347,7 @@ def test_cursed_context_manager():
     assert "open_box" not in dir(dict)
 
 
-@skip_legacy
+@pytest.mark.skipif(sys.version_info < (3,3), reason="requires python3.3")
 def test_cursed_decorator():
     "The `cursed` decorator should curse an existing symbols during a function"
 
