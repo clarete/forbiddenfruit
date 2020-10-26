@@ -1,4 +1,5 @@
 include README.md
 include COPYING
+include COPYING.mit
 include requirements.txt
 graft tests
