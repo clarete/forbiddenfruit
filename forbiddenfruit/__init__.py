@@ -40,6 +40,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import gc
 import sys
 from types import FunctionType
 import ctypes
@@ -218,25 +219,10 @@ PyTypeObject_as_types_dict = {
 }
 
 
-class SlotsProxy(PyObject):
-    _fields_ = [('dict', ctypes.POINTER(PyObject))]
-
-
 def patchable_builtin(klass):
-    name = klass.__name__
-    target = klass.__dict__
-
-    proxy_dict = SlotsProxy.from_address(id(target))
-    namespace = {}
-
-    # This code casts `proxy_dict.dict` into a python object and
-    # `from_address()` returns `py_object`
-    ctypes.pythonapi.PyDict_SetItem(
-        ctypes.py_object(namespace),
-        ctypes.py_object(name),
-        proxy_dict.dict,
-    )
-    return namespace[name]
+    refs = gc.get_referents(klass.__dict__)
+    assert len(refs) == 1
+    return refs[0]
 
 
 @wraps(__builtin__.dir)
