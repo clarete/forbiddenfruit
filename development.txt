@@ -1,4 +1,5 @@
 -r requirements.txt
 pytest
+pytest-cov
 coverage==3.6
 tox==1.4.3
