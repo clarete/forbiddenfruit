@@ -1,6 +1,6 @@
 # forbiddenfruit - Patch built-in python objects
 #
-# Copyright (c) 2013,2019  Lincoln de Sousa <lincoln@clarete.li>
+# Copyright (c) 2013-2020  Lincoln de Sousa <lincoln@clarete.li>
 #
 # This program is dual licensed under GPLv3 and MIT.
 #
@@ -55,7 +55,7 @@ except ImportError:
     # Python 3 support
     import builtins as __builtin__
 
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 __all__ = 'curse', 'curses', 'reverse'
 

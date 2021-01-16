@@ -56,7 +56,7 @@ local_file = lambda f: \
 if __name__ == '__main__':
     setup(
         name='forbiddenfruit',
-        version='0.1.3',
+        version='0.1.4',
         description='Patch python built-in objects',
         long_description=local_file('README.md'),
         long_description_content_type='text/markdown',

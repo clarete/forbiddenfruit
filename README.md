@@ -151,3 +151,13 @@ SOFTWARE.
 ### Logo by
 
 Kimberly Chandler, from The Noun Project
+
+### Changelog
+
+#### 0.1.4
+
+  * Add cursed() context manager/decorator
+  * Conditionally build test C extension
+  * Allow cursing dunder methods with non functions
+  * Fix dual licensing issues. Distribute both GPLv3 & MIT license
+    files.
