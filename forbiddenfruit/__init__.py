@@ -205,7 +205,29 @@ PyTypeObject._fields_ = [
     ('tp_hash', ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)),
     ('tp_call', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, PyObject_p)),
     ('tp_str', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
-    # ...
+    ('tp_getattro', ctypes.c_void_p),  # Type not declared yet
+    ('tp_setattro', ctypes.c_void_p),  # Type not declared yet
+    ('tp_as_buffer', ctypes.c_void_p),  # Type not declared yet
+    ('tp_flags', ctypes.c_void_p),  # Type not declared yet
+    ('tp_doc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_traverse', ctypes.c_void_p),  # Type not declared yet
+    ('tp_clear', ctypes.c_void_p),  # Type not declared yet
+    ('tp_richcompare', ctypes.c_void_p),  # Type not declared yet
+    ('tp_weaklistoffset', ctypes.c_void_p),  # Type not declared yet
+    ('tp_iter', ctypes.c_void_p),  # Type not declared yet
+    ('iternextfunc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_methods', ctypes.c_void_p),  # Type not declared yet
+    ('tp_members', ctypes.c_void_p),  # Type not declared yet
+    ('tp_getset', ctypes.c_void_p),  # Type not declared yet
+    ('tp_base', ctypes.c_void_p),  # Type not declared yet
+    ('tp_dict', ctypes.c_void_p),  # Type not declared yet
+    ('tp_descr_get', ctypes.c_void_p),  # Type not declared yet
+    ('tp_descr_set', ctypes.c_void_p),  # Type not declared yet
+    ('tp_dictoffset', ctypes.c_void_p),  # Type not declared yet
+    ('tp_init', ctypes.c_void_p),  # Type not declared yet
+    ('tp_alloc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_new', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, ctypes.c_void_p)),
+    # More struct fields follow but aren't declared here yet ...
 ]
 
 
@@ -305,6 +327,7 @@ for override in [as_number, as_sequence, as_async]:
 # divmod isn't a dunder, still make it overridable
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
+override_dict['__new__'] = ('tp_new', "tp_new")
 
 
 def _is_dunder(func_name):
