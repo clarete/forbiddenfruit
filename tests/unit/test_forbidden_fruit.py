@@ -319,6 +319,7 @@ def test_dunder_str():
         return 'one'
     curse(int, '__str__', always_one)
     assert str(1) == "one"
+    reverse(int, '__str__')
 
 @skip_legacy
 def test_dunder_reverse():
@@ -331,6 +332,15 @@ def test_dunder_reverse():
     reverse(TypeError, '__str__')
     assert str(te) == "testing"
 
+@skip_legacy
+def test_dunder_new():
+    assert str(1) == "1"
+    def the_answer(cls, args, kwargs):
+        return 'fourty-two'
+    curse(str, '__new__', the_answer)
+    assert str(1) == "fourty-two"
+    reverse(str, '__new__')
+    assert str(1) == "1"
 
 def test_cursed_context_manager():
     "The `cursed` context manager should curse an existing symbols in a scope"
