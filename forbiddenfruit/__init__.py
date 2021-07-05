@@ -262,7 +262,7 @@ __hidden_elements__ = defaultdict(list)
 __dir__ = dir
 __builtin__.dir = __filtered_dir__
 
-# build override infomation for dunder methods
+# build override information for dunder methods
 as_number = ('tp_as_number', [
     ("add", "nb_add"),
     ("sub", "nb_subtract"),
