@@ -289,7 +289,7 @@ as_number = ('tp_as_number', [
     ("ipow", "nb_inplace_power"),
     ("ilshift", "nb_inplace_lshift"),
     ("irshift", "nb_inplace_rshift"),
-    ("iadd", "nb_inplace_and"),
+    ("iand", "nb_inplace_and"),
     ("ixor", "nb_inplace_xor"),
     ("ior", "nb_inplace_or"),
     ("floordiv", "nb_floor_divide"),
