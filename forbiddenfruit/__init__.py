@@ -214,8 +214,8 @@ PyTypeObject._fields_ = [
     ('tp_clear', ctypes.c_void_p),  # Type not declared yet
     ('tp_richcompare', ctypes.c_void_p),  # Type not declared yet
     ('tp_weaklistoffset', ctypes.c_void_p),  # Type not declared yet
-    ('tp_iter', ctypes.c_void_p),  # Type not declared yet
-    ('iternextfunc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_iter', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),  # Type not declared yet
+    ('tp_iternext', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),  # Type not declared yet
     ('tp_methods', ctypes.c_void_p),  # Type not declared yet
     ('tp_members', ctypes.c_void_p),  # Type not declared yet
     ('tp_getset', ctypes.c_void_p),  # Type not declared yet
@@ -328,6 +328,9 @@ for override in [as_number, as_sequence, as_async]:
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
 override_dict['__new__'] = ('tp_new', "tp_new")
+override_dict['__hash__'] = ('tp_hash', 'tp_hash')
+override_dict['__iter__'] = ('tp_iter', 'tp_iter')
+override_dict['__next__'] = ('tp_iternext', 'tp_iternext')
 
 
 def _is_dunder(func_name):
@@ -420,21 +423,16 @@ def _revert_special(klass, attr):
 
 def curse(klass, attr, value, hide_from_dir=False):
     """Curse a built-in `klass` with `attr` set to `value`
-
     This function monkey-patches the built-in python object `attr` adding a new
     attribute to it. You can add any kind of argument to the `class`.
-
     It's possible to attach methods as class methods, just do the following:
-
       >>> def myclassmethod(cls):
       ...     return cls(1.5)
       >>> curse(float, "myclassmethod", classmethod(myclassmethod))
       >>> float.myclassmethod()
       1.5
-
     Methods will be automatically bound, so don't forget to add a self
     parameter to them, like this:
-
       >>> def hello(self):
       ...     return self * 2
       >>> curse(str, "hello", hello)
@@ -477,25 +475,19 @@ def curse(klass, attr, value, hide_from_dir=False):
 
 def reverse(klass, attr):
     """Reverse a curse in a built-in object
-
     This function removes *new* attributes. It's actually possible to remove
     any kind of attribute from any built-in class, but just DON'T DO IT :)
-
     Good:
-
       >>> curse(str, "blah", "bleh")
       >>> assert "blah" in dir(str)
       >>> reverse(str, "blah")
       >>> assert "blah" not in dir(str)
-
     Bad:
-
       >>> reverse(str, "strip")
       >>> " blah ".strip()
       Traceback (most recent call last):
         File "<stdin>", line 1, in <module>
       AttributeError: 'str' object has no attribute 'strip'
-
     """
     if _is_dunder(attr):
         _revert_special(klass, attr)
@@ -509,9 +501,7 @@ def reverse(klass, attr):
 
 def curses(klass, name):
     """Decorator to add decorated method named `name` the class `klass`
-
     So you can use it like this:
-
         >>> @curses(dict, 'banner')
         ... def dict_banner(self):
         ...     l = len(self)
