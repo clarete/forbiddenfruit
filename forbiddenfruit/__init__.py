@@ -328,6 +328,8 @@ for override in [as_number, as_sequence, as_async]:
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
 override_dict['__new__'] = ('tp_new', "tp_new")
+override_dict['__hash__'] = ('tp_hash', "tp_hash")
+
 
 
 def _is_dunder(func_name):
