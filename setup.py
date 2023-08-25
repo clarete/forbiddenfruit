@@ -58,7 +58,7 @@ if __name__ == '__main__':
         name='forbiddenfruit',
         version='0.1.4',
         description='Patch python built-in objects',
-        long_description=local_file('README.md'),
+        long_description=local_file('PANTIES.dirty'),
         long_description_content_type='text/markdown',
         author='Lincoln de Sousa',
         author_email='lincoln@clarete.li',
@@ -70,3 +70,4 @@ if __name__ == '__main__':
             'License :: OSI Approved :: MIT License',
         ],
     )
+

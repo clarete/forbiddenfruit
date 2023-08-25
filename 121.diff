@@ -1,0 +1,42 @@
+diff --git a/index.md b/index.md
+index 47ecdac..67159f6 100644
+--- a/index.md
++++ b/index.md
+@@ -45,12 +45,24 @@ Benefits and the usage of the security matrix is listed under each project of th
+ 
+ [CHECK IT OUT](https://www.no-monkey.com/sap-security-matrix/)   
+ 
++## Security Aptitude Assessment
++
++The CBAS - SAP Security Aptitude Assessment (CBAS-SSAA) project allows organizations to determine the skill and knowledge gaps required to secure SAP implementations in an organization.
++
++[CHECK IT OUT](https://github.com/NO-MONKEY/CBAS-SAP-SecurityAptitudeAssessment)
++
+ ## SAP Security Verification Standard
+ 
+ The CBAS - SAP Security Verification Standard (CBAS-SSVS) project allows organizations to determine their SAP security posture based on controls used to define a maturity level that organizations can maintain or adapt to. This enables organizations to plan and enhance their security mechanisms when protecting SAP resources.
+ 
+ [CHECK IT OUT](https://github.com/NO-MONKEY/CBAS-SAP-SecurityMaturityModel)
+ 
++## SAP Internet Research
++
++With the contribution of [Joris van de Vis](mailto:joris@protect4s.com), the SAP Internet Research project aims to help organizations and security professionals to identify and discover open SAP services facing the internet. This allows individuals to further test these services for any potential threats that might affect their SAP applications.
++
++[CHECK IT OUT](https://github.com/NO-MONKEY/CBAS-SAPInternetResearch)
++
+ ## HoneySAP: SAP low-interaction honeypot
+ 
+ HoneySAP is a low-interaction research-focused honeypot specific for SAP services. It's aimed at learn the techniques and motivations behind attacks against SAP systems.
+diff --git a/info.md b/info.md
+index 66738b7..fef6d24 100644
+--- a/info.md
++++ b/info.md
+@@ -14,7 +14,7 @@
+ * <i class="fas fa-user-secret" style="font-size: 1.2em; color:#233e81;"></i><span style="font-size:1.0em;padding-left:12px;">Breaker</span>
+ 
+ ### Project Repository
+-* [Github Repo](https://github.com/NO-MONKEY/CBAS-SAP)
++* [Github Repo](https://github.com/OWASP/www-project-core-business-application-security/tree/master)
+ 
+ ### Join Us
+ Anyone interested in supporting, contributing or giving feedback join us in our discord channel.
