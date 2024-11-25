@@ -99,7 +99,7 @@ assert "test" not in dir(str)
 
 ## Compatibility
 
-Forbbiden Fruit is tested on CPython 2.7, 3.0, and 3.3-3.7.
+Forbbiden Fruit is tested on CPython 3.7-3.13.
 
 Since Forbidden Fruit is fundamentally dependent on the C API,
 this library won't work on other python implementations, such
@@ -107,7 +107,7 @@ as Jython, pypy, etc.
 
 ## License
 
-Copyright (C) 2013,2019  Lincoln Clarete <lincoln@clarete.li>
+Copyright (C) 2013,2024 Lincoln Clarete <lincoln@clarete.li>
 
 This software is available under two different licenses at your
 choice:
