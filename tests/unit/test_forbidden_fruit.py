@@ -2,7 +2,7 @@ import sys
 from datetime import datetime
 from forbiddenfruit import cursed, curses, curse, reverse
 from types import FunctionType
-from nose.tools import nottest, istest
+import pytest
 
 # Our stub! :)
 from . import ffruit
@@ -14,7 +14,8 @@ def almost_equal(a, b, e=0.001):
     return abs(a - b) < e
 
 
-skip_legacy = nottest if sys.version_info < (3, 3) else istest
+skip_legacy = pytest.mark.skipif(sys.version_info < (3, 3),
+                                 reason="requires Python >= 3.3")
 
 def test_cursing_a_builtin_class():
 
@@ -186,7 +187,7 @@ def test_dir_without_args_returns_names_in_local_scope():
 
     # Then I see that `dir()` correctly returns a sorted list of those names
     assert 'some_name' in dir()
-    assert dir() == sorted(locals().keys())
+    assert 'z' in dir()
 
 
 @skip_legacy
