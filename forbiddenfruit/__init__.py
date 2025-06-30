@@ -97,7 +97,7 @@ FILE_p = ctypes.POINTER(PyFile)
 
 def get_not_implemented():
     namespace = {}
-    name = "_Py_NotImplmented"
+    name = "_Py_NotImplemented"
     not_implemented = ctypes.cast(
         ctypes.pythonapi._Py_NotImplementedStruct, ctypes.py_object)
 
