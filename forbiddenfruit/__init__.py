@@ -344,7 +344,7 @@ def _is_dunder(func_name):
 def _curse_special(klass, attr, func):
     """
     Curse one of the "dunder" methods, i.e. methods beginning with __ which have a
-    precial resolution code path
+    special resolution code path
     """
     assert callable(func)
 

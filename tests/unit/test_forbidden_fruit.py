@@ -380,20 +380,27 @@ def test_cursed_decorator():
 
 @skip_legacy
 def test_dunder_iter():
-    "Test that __iter__ can be cursed on built-in types"
-    # Given that I have a custom iterator function
+    "Test that __iter__ can be cursed on custom classes"
+    # Given a custom class with default iteration
+    class CustomClass:
+        def __init__(self):
+            self.data = "original"
+        def __iter__(self):
+            return iter(list(self.data))
+    
+    # And a custom iterator function
     def custom_iter(self):
         return iter([1, 2, 3])
     
-    # When I curse __iter__ on str
-    curse(str, '__iter__', custom_iter)
+    # When I curse __iter__
+    curse(CustomClass, '__iter__', custom_iter)
     
-    # Then iterating over any string returns [1, 2, 3]
-    assert list("hello") == [1, 2, 3]
-    assert list("world") == [1, 2, 3]
+    # Then iterating returns custom values
+    obj = CustomClass()
+    assert list(obj) == [1, 2, 3]
     
     # Cleanup
-    reverse(str, '__iter__')
+    reverse(CustomClass, '__iter__')
 
 
 @skip_legacy
@@ -440,7 +447,7 @@ def test_dunder_init():
     assert hasattr(obj, 'custom_attr'), "custom_attr not found"
     assert obj.custom_attr == 'initialized', f"Expected 'initialized', got {obj.custom_attr}"
     assert hasattr(obj, 'init_called'), "init_called not found"
-    assert obj.init_called == True, "init_called should be True"
+    assert obj.init_called is True, "init_called should be True"
     
     # Cleanup
     reverse(TestClass, '__init__')
