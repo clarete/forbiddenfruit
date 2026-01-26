@@ -376,3 +376,109 @@ def test_cursed_decorator():
     # And it was reversed
     assert "open_box" not in dir(obj)
     assert "open_box" not in dir(dict)
+
+
+@skip_legacy
+def test_dunder_iter():
+    "Test that __iter__ can be cursed on built-in types"
+    # Given that I have a custom iterator function
+    def custom_iter(self):
+        return iter([1, 2, 3])
+    
+    # When I curse __iter__ on str
+    curse(str, '__iter__', custom_iter)
+    
+    # Then iterating over any string returns [1, 2, 3]
+    assert list("hello") == [1, 2, 3]
+    assert list("world") == [1, 2, 3]
+    
+    # Cleanup
+    reverse(str, '__iter__')
+
+
+@skip_legacy
+def test_dunder_hash():
+    "Test that __hash__ can be cursed on custom classes"
+    # Given that I have a custom hash function
+    def custom_hash(self):
+        return 12345
+    
+    # When I curse __hash__ on a custom class
+    curse(ffruit.Dummy, '__hash__', custom_hash)
+    
+    # Then hashing returns our custom value
+    obj = ffruit.Dummy()
+    assert hash(obj) == 12345
+    
+    # And dict operations work
+    d = {obj: 'value'}
+    assert d[obj] == 'value'
+    
+    # Cleanup
+    reverse(ffruit.Dummy, '__hash__')
+
+
+@skip_legacy
+def test_dunder_init():
+    "Test that __init__ can be cursed on custom classes"
+    # Given a Python class (C extension classes may not support dynamic attributes)
+    class TestClass:
+        pass
+    
+    # And a custom init function
+    def custom_init(self, args, kwargs):
+        # Set a custom attribute
+        self.custom_attr = 'initialized'
+        self.init_called = True
+        return 0
+    
+    # When I curse __init__
+    curse(TestClass, '__init__', custom_init)
+    
+    # Then new instances have the custom attributes
+    obj = TestClass()
+    assert hasattr(obj, 'custom_attr'), "custom_attr not found"
+    assert obj.custom_attr == 'initialized', f"Expected 'initialized', got {obj.custom_attr}"
+    assert hasattr(obj, 'init_called'), "init_called not found"
+    assert obj.init_called == True, "init_called should be True"
+    
+    # Cleanup
+    reverse(TestClass, '__init__')
+
+
+@skip_legacy  
+def test_dunder_next():
+    "Test that __next__ can be cursed on custom iterator classes"
+    # Given that I have a custom iterator class
+    class CustomIterator:
+        def __init__(self):
+            self.count = 0
+        def __iter__(self):
+            return self
+        def __next__(self):
+            # Original behavior
+            if self.count < 2:
+                self.count += 1
+                return self.count
+            raise StopIteration
+    
+    # And a custom next function
+    def custom_next(self):
+        if self.count < 3:
+            self.count += 1
+            return self.count * 10
+        raise StopIteration
+    
+    # When I curse __next__
+    curse(CustomIterator, '__next__', custom_next)
+    
+    # Then iteration uses the custom behavior
+    it = CustomIterator()
+    # Note: Due to ctypes limitations with StopIteration,
+    # we test individual next() calls rather than list()
+    assert next(it) == 10
+    assert next(it) == 20
+    assert next(it) == 30
+    
+    # Cleanup
+    reverse(CustomIterator, '__next__')

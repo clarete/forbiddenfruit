@@ -91,7 +91,8 @@ LenFunc_p = ctypes.CFUNCTYPE(Py_ssize_t, PyObject_p)
 SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, Py_ssize_t)
 SSizeObjArgProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, Py_ssize_t, PyObject_p)
 ObjObjProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p)
-InitProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p, PyObject_p)
+# For tp_init: args and kwargs can be NULL, so use c_void_p and convert manually
+InitProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, ctypes.c_void_p, ctypes.c_void_p)
 HashFunc_p = ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)
 
 FILE_p = ctypes.POINTER(PyFile)
@@ -354,6 +355,15 @@ def _curse_special(klass, attr, func):
         python integer which is then converted to a pointer by ctypes
         """
         try:
+            # Special handling for __init__ which receives c_void_p arguments
+            if attr == '__init__' and len(args) == 3:
+                self_arg = args[0]
+                # Convert c_void_p to py_object if not NULL
+                args_ptr = args[1]
+                kwargs_ptr = args[2]
+                args_obj = ctypes.cast(args_ptr, ctypes.py_object).value if args_ptr else ()
+                kwargs_obj = ctypes.cast(kwargs_ptr, ctypes.py_object).value if kwargs_ptr else {}
+                return func(self_arg, args_obj, kwargs_obj)
             return func(*args, **kwargs)
         except NotImplementedError:
             return NotImplementedRet
