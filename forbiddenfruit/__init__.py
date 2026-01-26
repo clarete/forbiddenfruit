@@ -91,6 +91,8 @@ LenFunc_p = ctypes.CFUNCTYPE(Py_ssize_t, PyObject_p)
 SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, Py_ssize_t)
 SSizeObjArgProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, Py_ssize_t, PyObject_p)
 ObjObjProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p)
+InitProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p, PyObject_p)
+HashFunc_p = ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)
 
 FILE_p = ctypes.POINTER(PyFile)
 
@@ -202,7 +204,7 @@ PyTypeObject._fields_ = [
     ('tp_as_number', ctypes.POINTER(PyNumberMethods)),
     ('tp_as_sequence', ctypes.POINTER(PySequenceMethods)),
     ('tp_as_mapping', ctypes.POINTER(PyMappingMethods)),
-    ('tp_hash', ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)),
+    ('tp_hash', HashFunc_p),
     ('tp_call', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, PyObject_p)),
     ('tp_str', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
     ('tp_getattro', ctypes.c_void_p),  # Type not declared yet
@@ -214,8 +216,8 @@ PyTypeObject._fields_ = [
     ('tp_clear', ctypes.c_void_p),  # Type not declared yet
     ('tp_richcompare', ctypes.c_void_p),  # Type not declared yet
     ('tp_weaklistoffset', ctypes.c_void_p),  # Type not declared yet
-    ('tp_iter', ctypes.c_void_p),  # Type not declared yet
-    ('iternextfunc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_iter', UnaryFunc_p),
+    ('tp_iternext', UnaryFunc_p),
     ('tp_methods', ctypes.c_void_p),  # Type not declared yet
     ('tp_members', ctypes.c_void_p),  # Type not declared yet
     ('tp_getset', ctypes.c_void_p),  # Type not declared yet
@@ -224,7 +226,7 @@ PyTypeObject._fields_ = [
     ('tp_descr_get', ctypes.c_void_p),  # Type not declared yet
     ('tp_descr_set', ctypes.c_void_p),  # Type not declared yet
     ('tp_dictoffset', ctypes.c_void_p),  # Type not declared yet
-    ('tp_init', ctypes.c_void_p),  # Type not declared yet
+    ('tp_init', InitProc_p),
     ('tp_alloc', ctypes.c_void_p),  # Type not declared yet
     ('tp_new', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, ctypes.c_void_p)),
     # More struct fields follow but aren't declared here yet ...
@@ -328,6 +330,10 @@ for override in [as_number, as_sequence, as_async]:
 override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
 override_dict['__new__'] = ('tp_new', "tp_new")
+override_dict['__hash__'] = ('tp_hash', "tp_hash")
+override_dict['__iter__'] = ('tp_iter', "tp_iter")
+override_dict['__next__'] = ('tp_iternext', "tp_iternext")
+override_dict['__init__'] = ('tp_init', "tp_init")
 
 
 def _is_dunder(func_name):
