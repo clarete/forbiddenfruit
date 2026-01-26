@@ -347,6 +347,13 @@ def _curse_special(klass, attr, func):
     special resolution code path
     """
     assert callable(func)
+    
+    # Save the old method FIRST, before any modifications
+    old_name = '_c_%s' % attr
+    dikt = patchable_builtin(klass)
+    if hasattr(klass, attr):
+        old_value = getattr(klass, attr)
+        dikt[old_name] = old_value
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -408,6 +415,23 @@ def _curse_special(klass, attr, func):
         cfunc = cfunc_t(wrapper)
         tp_func_dict[(klass, attr)] = cfunc
         setattr(tyobj, impl_method, cfunc)
+    
+    # Notify Python that the type has been modified
+    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
+    
+    # Also update the type's __dict__ so Python's attribute lookup finds the new method
+    # This is needed for methods like __init__, __iter__, etc. that are accessed via __dict__
+    # Note: old value was already saved at the beginning of the function
+    
+    # For __init__, create a Python-level wrapper that has normal signature
+    if attr == '__init__':
+        @wraps(func)
+        def python_level_wrapper(self, *args, **kwargs):
+            # Convert Python args to the format expected by the user's function
+            return func(self, args, kwargs)
+        dikt[attr] = python_level_wrapper
+    else:
+        dikt[attr] = func
 
 def _revert_special(klass, attr):
     tp_as_name, impl_method = override_dict[attr]
