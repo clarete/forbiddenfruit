@@ -489,3 +489,110 @@ def test_dunder_next():
     
     # Cleanup
     reverse(CustomIterator, '__next__')
+
+
+@skip_legacy
+def test_dunder_init_on_set_subclass():
+    "Test that __init__ can be cursed on set subclasses"
+    # Given a set subclass
+    class MySet(set):
+        pass
+    
+    # And a custom init function that preserves original behavior
+    def custom_init(self, args, kwargs):
+        # Call the original init to populate the set
+        if args and hasattr(type(self), '_c___init__'):
+            type(self)._c___init__(self, *args, **kwargs)
+        # Add custom tracking
+        self.init_was_called = True
+        return 0
+    
+    # When I curse __init__ on the subclass
+    curse(MySet, '__init__', custom_init)
+    
+    # Then creating instances calls the custom init
+    s = MySet([1, 2, 3])
+    assert hasattr(s, 'init_was_called'), "Custom init was not called"
+    assert s.init_was_called is True, "init_was_called should be True"
+    assert len(s) == 3, f"Expected 3 elements, got {len(s)}"
+    assert s == {1, 2, 3}, f"Expected {{1, 2, 3}}, got {s}"
+    
+    # And explicit __init__ calls also work
+    s2 = MySet.__new__(MySet)
+    s2.__init__([4, 5, 6])
+    assert hasattr(s2, 'init_was_called'), "Custom init was not called on explicit __init__"
+    assert s2 == {4, 5, 6}, f"Expected {{4, 5, 6}}, got {s2}"
+    
+    # Cleanup
+    reverse(MySet, '__init__')
+
+
+@skip_legacy
+def test_dunder_init_on_builtin_set_explicit_call():
+    "Test that __init__ curse on built-in set works for explicit calls"
+    # Given a custom init function for set
+    call_count = [0]
+    
+    def custom_init(self, args, kwargs):
+        call_count[0] += 1
+        # Call original init
+        if args and hasattr(type(self), '_c___init__'):
+            type(self)._c___init__(self, *args, **kwargs)
+        return 0
+    
+    # When I curse set.__init__
+    curse(set, '__init__', custom_init)
+    
+    # Then direct set() constructor won't call it (CPython optimization)
+    call_count[0] = 0
+    s1 = set([1, 2, 3])
+    assert call_count[0] == 0, "Constructor unexpectedly called __init__ (CPython optimization changed?)"
+    assert s1 == {1, 2, 3}, f"Expected {{1, 2, 3}}, got {s1}"
+    
+    # But explicit __init__ calls do work
+    call_count[0] = 0
+    s2 = set.__new__(set)
+    s2.__init__([4, 5, 6])
+    assert call_count[0] == 1, f"Expected 1 call, got {call_count[0]}"
+    assert s2 == {4, 5, 6}, f"Expected {{4, 5, 6}}, got {s2}"
+    
+    # Cleanup
+    reverse(set, '__init__')
+
+
+@skip_legacy
+def test_intercepting_set_via_builtins_replacement():
+    "Demonstrate how to intercept set() calls by replacing in builtins"
+    import builtins
+    
+    # Save original
+    original_set = builtins.set
+    
+    # Track calls
+    intercept_log = []
+    
+    # Create a wrapper class
+    class SetInterceptor:
+        def __new__(cls, iterable=None):
+            intercept_log.append(('__new__', iterable))
+            # Call original set
+            if iterable is None:
+                return original_set()
+            return original_set(iterable)
+    
+    try:
+        # Replace set in builtins
+        builtins.set = SetInterceptor
+        
+        # Test that interception works
+        s1 = set()
+        assert len(intercept_log) == 1, f"Expected 1 interception, got {len(intercept_log)}"
+        assert intercept_log[0] == ('__new__', None)
+        
+        s2 = set([1, 2, 3])
+        assert len(intercept_log) == 2, f"Expected 2 interceptions, got {len(intercept_log)}"
+        assert s2 == {1, 2, 3}
+        
+    finally:
+        # Always restore
+        builtins.set = original_set
