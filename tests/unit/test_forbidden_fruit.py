@@ -399,3 +399,45 @@ def test_dunder_hash():
     
     # Cleanup
     reverse(ffruit.Dummy, '__hash__')
+
+
+@skip_legacy
+def test_dunder_hash_on_object():
+    "Test that __hash__ can be cursed on object base class"
+    # Given a custom hash function
+    call_log = []
+    _orig_hash = object.__hash__
+    
+    def custom_hash(self):
+        call_log.append(repr(self))
+        return _orig_hash(self)
+    
+    # When I curse object.__hash__ BEFORE defining the class
+    curse(object, '__hash__', custom_hash)
+    
+    # And then define a custom class inheriting from object
+    class TestClass():
+        def __init__(self, x):
+            self.x = x
+        def __repr__(self):
+            return f"TestClass({self.x})"
+    
+    # Then hashing instances of TestClass calls the custom hash
+    obj1 = TestClass(1)
+    obj2 = TestClass(2)
+    obj3 = TestClass(3)
+    
+    # Creating a set triggers hashing
+    s = {obj1, obj2, obj3}
+    
+    # Verify custom hash was called for each object
+    assert len(call_log) >= 3, f"Expected at least 3 hash calls, got {len(call_log)}"
+    assert "TestClass(1)" in str(call_log)
+    assert "TestClass(2)" in str(call_log)
+    assert "TestClass(3)" in str(call_log)
+    
+    # And the set contains all three objects
+    assert len(s) == 3
+    
+    # Cleanup
+    reverse(object, '__hash__')
