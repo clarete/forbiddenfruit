@@ -91,8 +91,6 @@ LenFunc_p = ctypes.CFUNCTYPE(Py_ssize_t, PyObject_p)
 SSizeArgFunc_p = ctypes.CFUNCTYPE(ctypes.py_object, PyObject_p, Py_ssize_t)
 SSizeObjArgProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, Py_ssize_t, PyObject_p)
 ObjObjProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, PyObject_p)
-# For tp_init: args and kwargs can be NULL, so use c_void_p and convert manually
-InitProc_p = ctypes.CFUNCTYPE(ctypes.c_int, PyObject_p, ctypes.c_void_p, ctypes.c_void_p)
 HashFunc_p = ctypes.CFUNCTYPE(ctypes.c_int64, PyObject_p)
 
 FILE_p = ctypes.POINTER(PyFile)
@@ -217,8 +215,8 @@ PyTypeObject._fields_ = [
     ('tp_clear', ctypes.c_void_p),  # Type not declared yet
     ('tp_richcompare', ctypes.c_void_p),  # Type not declared yet
     ('tp_weaklistoffset', ctypes.c_void_p),  # Type not declared yet
-    ('tp_iter', UnaryFunc_p),
-    ('tp_iternext', UnaryFunc_p),
+    ('tp_iter', ctypes.c_void_p),  # Type not declared yet
+    ('iternextfunc', ctypes.c_void_p),  # Type not declared yet
     ('tp_methods', ctypes.c_void_p),  # Type not declared yet
     ('tp_members', ctypes.c_void_p),  # Type not declared yet
     ('tp_getset', ctypes.c_void_p),  # Type not declared yet
@@ -227,7 +225,7 @@ PyTypeObject._fields_ = [
     ('tp_descr_get', ctypes.c_void_p),  # Type not declared yet
     ('tp_descr_set', ctypes.c_void_p),  # Type not declared yet
     ('tp_dictoffset', ctypes.c_void_p),  # Type not declared yet
-    ('tp_init', InitProc_p),
+    ('tp_init', ctypes.c_void_p),  # Type not declared yet
     ('tp_alloc', ctypes.c_void_p),  # Type not declared yet
     ('tp_new', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, ctypes.c_void_p)),
     # More struct fields follow but aren't declared here yet ...
@@ -332,9 +330,6 @@ override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
 override_dict['__new__'] = ('tp_new', "tp_new")
 override_dict['__hash__'] = ('tp_hash', "tp_hash")
-override_dict['__iter__'] = ('tp_iter', "tp_iter")
-override_dict['__next__'] = ('tp_iternext', "tp_iternext")
-override_dict['__init__'] = ('tp_init', "tp_init")
 
 
 def _is_dunder(func_name):
@@ -347,13 +342,6 @@ def _curse_special(klass, attr, func):
     special resolution code path
     """
     assert callable(func)
-    
-    # Save the old method FIRST, before any modifications
-    old_name = '_c_%s' % attr
-    dikt = patchable_builtin(klass)
-    if hasattr(klass, attr):
-        old_value = getattr(klass, attr)
-        dikt[old_name] = old_value
 
     @wraps(func)
     def wrapper(*args, **kwargs):
@@ -362,15 +350,6 @@ def _curse_special(klass, attr, func):
         python integer which is then converted to a pointer by ctypes
         """
         try:
-            # Special handling for __init__ which receives c_void_p arguments
-            if attr == '__init__' and len(args) == 3:
-                self_arg = args[0]
-                # Convert c_void_p to py_object if not NULL
-                args_ptr = args[1]
-                kwargs_ptr = args[2]
-                args_obj = ctypes.cast(args_ptr, ctypes.py_object).value if args_ptr else ()
-                kwargs_obj = ctypes.cast(kwargs_ptr, ctypes.py_object).value if kwargs_ptr else {}
-                return func(self_arg, args_obj, kwargs_obj)
             return func(*args, **kwargs)
         except NotImplementedError:
             return NotImplementedRet
@@ -416,22 +395,13 @@ def _curse_special(klass, attr, func):
         tp_func_dict[(klass, attr)] = cfunc
         setattr(tyobj, impl_method, cfunc)
     
-    # Notify Python that the type has been modified
+    # Notify Python that the type has been modified so it flushes internal caches
     ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
     
-    # Also update the type's __dict__ so Python's attribute lookup finds the new method
-    # This is needed for methods like __init__, __iter__, etc. that are accessed via __dict__
-    # Note: old value was already saved at the beginning of the function
-    
-    # For __init__, create a Python-level wrapper that has normal signature
-    if attr == '__init__':
-        @wraps(func)
-        def python_level_wrapper(self, *args, **kwargs):
-            # Convert Python args to the format expected by the user's function
-            return func(self, args, kwargs)
-        dikt[attr] = python_level_wrapper
-    else:
-        dikt[attr] = func
+    # Also update the type's __dict__ so that subclasses can find the method
+    # This is important for methods like __hash__ that need to be accessible to subclasses
+    dikt = patchable_builtin(klass)
+    dikt[attr] = func
 
 def _revert_special(klass, attr):
     tp_as_name, impl_method = override_dict[attr]
