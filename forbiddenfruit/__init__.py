@@ -395,13 +395,13 @@ def _curse_special(klass, attr, func):
         tp_func_dict[(klass, attr)] = cfunc
         setattr(tyobj, impl_method, cfunc)
     
-    # Notify Python that the type has been modified so it flushes internal caches
-    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
-    
     # Also update the type's __dict__ so that subclasses can find the method
     # This is important for methods like __hash__ that need to be accessible to subclasses
     dikt = patchable_builtin(klass)
     dikt[attr] = func
+    
+    # Notify Python that the type has been modified so it flushes internal caches
+    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
 
 def _revert_special(klass, attr):
     tp_as_name, impl_method = override_dict[attr]
@@ -426,6 +426,14 @@ def _revert_special(klass, attr):
 
             cfunc = tp_as_dict[(klass, attr)]
             setattr(tyobj, impl_method, cfunc)
+    
+    # Remove the attribute from the type's __dict__
+    dikt = patchable_builtin(klass)
+    if attr in dikt:
+        del dikt[attr]
+    
+    # Notify Python that the type has been modified so it flushes internal caches
+    ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
 
 
 def curse(klass, attr, value, hide_from_dir=False):
