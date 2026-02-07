@@ -398,6 +398,13 @@ def _curse_special(klass, attr, func):
     # Also update the type's __dict__ so that subclasses can find the method
     # This is important for methods like __hash__ that need to be accessible to subclasses
     dikt = patchable_builtin(klass)
+    
+    # Save the old value from dict before overwriting (like curse() does)
+    old_value = dikt.get(attr, None)
+    old_name = '_c_%s' % attr
+    if old_value:
+        dikt[old_name] = old_value
+    
     dikt[attr] = func
     
     # Notify Python that the type has been modified so it flushes internal caches
@@ -427,9 +434,15 @@ def _revert_special(klass, attr):
             cfunc = tp_as_dict[(klass, attr)]
             setattr(tyobj, impl_method, cfunc)
     
-    # Remove the attribute from the type's __dict__
+    # Restore the original value in the type's __dict__
     dikt = patchable_builtin(klass)
-    if attr in dikt:
+    old_name = '_c_%s' % attr
+    if old_name in dikt:
+        # Restore the saved original value
+        dikt[attr] = dikt[old_name]
+        del dikt[old_name]
+    elif attr in dikt:
+        # No saved value, just delete the cursed one
         del dikt[attr]
     
     # Notify Python that the type has been modified so it flushes internal caches
