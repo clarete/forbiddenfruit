@@ -559,7 +559,7 @@ def test_dunder_hash_context_manager():
 
 @skip_legacy
 def test_dunder_hash_multiple_cycles():
-    """Test multiple curse→reverse cycles work correctly without memory leaks or corruption"""
+    """Test multiple curse->reverse cycles work correctly without memory leaks or corruption"""
     call_log = []
     _orig_hash = object.__hash__
     
