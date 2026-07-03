@@ -215,7 +215,7 @@ PyTypeObject._fields_ = [
     ('tp_richcompare', ctypes.c_void_p),  # Type not declared yet
     ('tp_weaklistoffset', ctypes.c_void_p),  # Type not declared yet
     ('tp_iter', ctypes.c_void_p),  # Type not declared yet
-    ('iternextfunc', ctypes.c_void_p),  # Type not declared yet
+    ('tp_iternext', ctypes.CFUNCTYPE(PyObject_p, PyObject_p)),
     ('tp_methods', ctypes.c_void_p),  # Type not declared yet
     ('tp_members', ctypes.c_void_p),  # Type not declared yet
     ('tp_getset', ctypes.c_void_p),  # Type not declared yet
@@ -329,6 +329,7 @@ override_dict['divmod()'] = ('tp_as_number', "nb_divmod")
 override_dict['__str__'] = ('tp_str', "tp_str")
 override_dict['__new__'] = ('tp_new', "tp_new")
 override_dict['__hash__'] = ('tp_hash', "tp_hash")
+override_dict['__next__'] = ('tp_iternext', "tp_iternext")
 
 
 
