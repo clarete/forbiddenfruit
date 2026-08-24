@@ -342,6 +342,17 @@ def test_dunder_new():
     reverse(str, '__new__')
     assert str(1) == "1"
 
+@skip_legacy
+def test_dunder_next():
+    assert next(iter([1])) == 1
+    def the_answer(cls):
+        return 42
+    list_iterator = type(iter([]))
+    curse(list_iterator, '__next__', the_answer)
+    assert next(iter([1])) == 42
+    reverse(list_iterator, '__next__')
+    assert next(iter([1])) == 1
+
 def test_cursed_context_manager():
     "The `cursed` context manager should curse an existing symbols in a scope"
 
