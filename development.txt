@@ -3,3 +3,5 @@ setuptools
 wheel
 pytest
 pytest-cov
+build
+twine

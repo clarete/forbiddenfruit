@@ -48,13 +48,12 @@ clean:
 	@find . -name __pycache__ -delete
 	@rm -rf .coverage *.egg-info *.log build dist MANIFEST
 
-publish:
-	@if [ -e "$$HOME/.pypirc" ]; then \
-		echo "Uploading to '$(CUSTOM_PIP_INDEX)'"; \
-		python setup.py sdist upload -r "$(CUSTOM_PIP_INDEX)"; \
-	else \
-		echo "You should create a file called \`.pypirc' under your home dir.\n"; \
-		echo "That's the right place to configure \`pypi' repos.\n"; \
-		echo "Read more about it here: https://github.com/Yipit/yipit/blob/dev/docs/rfc/RFC00007-python-packages.md"; \
-		exit 1; \
-	fi
+dist: clean
+	@echo "Building source distribution and wheel..."
+	@# FFRUIT_EXTENSION is emptied so the `ffruit' C test stub is not
+	@# bundled into the released package -- it's only used by the tests.
+	@FFRUIT_EXTENSION= python -m build
+
+publish: dist
+	@echo "Uploading to PyPI with twine..."
+	@twine upload dist/*
