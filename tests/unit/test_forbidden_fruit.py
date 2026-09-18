@@ -115,12 +115,13 @@ def test_overriding_class_method():
     curse(datetime, 'now', classmethod(lambda *p: False))
 
     # Then I see that the method was replaced, but we still have the original
-    # method set as `_c_apppend`
+    # method set as `_c_now`
     assert '_c_now' in dir(datetime)
     assert datetime.now() is False
     assert datetime(2013, 4, 5).now() is False
 
-    curse(datetime, now, orig)
+    # Put the real datetime.now back (reverse() would just delete it)
+    curse(datetime, 'now', orig)
 
 
 def test_overriding_instance_method():
