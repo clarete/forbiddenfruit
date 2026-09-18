@@ -118,6 +118,8 @@ def test_overriding_class_method():
     assert datetime.now() is False
     assert datetime(2013, 4, 5).now() is False
 
+    reverse(datetime, 'now')
+
 
 def test_overriding_instance_method():
     # Given that I have an instance of a `Dummy` object
