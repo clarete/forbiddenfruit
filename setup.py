@@ -1,6 +1,6 @@
 # forbiddenfruit - Patch built-in python objects
 #
-# Copyright (c) 2013,2019  Lincoln de Sousa <lincoln@clarete.li>
+# Copyright (c) 2013-2026  Lincoln de Sousa <lincoln@clarete.li>
 #
 # This program is dual licensed under GPLv3 and MIT.
 #
@@ -56,7 +56,7 @@ local_file = lambda f: \
 if __name__ == '__main__':
     setup(
         name='forbiddenfruit',
-        version='0.1.4',
+        version='0.1.5',
         description='Patch python built-in objects',
         long_description=local_file('README.md'),
         long_description_content_type='text/markdown',

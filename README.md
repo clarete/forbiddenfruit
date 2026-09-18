@@ -154,6 +154,12 @@ Kimberly Chandler, from The Noun Project
 
 ### Changelog
 
+#### 0.1.5
+
+ * feat: Add support for cursing __next__, __hash__, and __new__
+ * build: use pytest to run tests and twine for publishing package
+ * tests: use github ci instead of travis
+
 #### 0.1.4
 
   * Add cursed() context manager/decorator
