@@ -109,6 +109,8 @@ def test_dir_filtering_same_symbol_different_instance():
 
 
 def test_overriding_class_method():
+    orig = datetime.now
+
     # Given that I have a cursed object
     curse(datetime, 'now', classmethod(lambda *p: False))
 
@@ -119,6 +121,7 @@ def test_overriding_class_method():
     assert datetime(2013, 4, 5).now() is False
 
     reverse(datetime, 'now')
+    curse(datetime, now, orig)
 
 
 def test_overriding_instance_method():
