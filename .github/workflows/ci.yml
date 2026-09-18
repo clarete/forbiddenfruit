@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: pip install -r development.txt
+
+      # FFRUIT_EXTENSION=true is exported by the Makefile, so `make` compiles
+      # the `ffruit' C test stub before running the suite. SKIP_DEPS avoids the
+      # Makefile's silent pip reinstall since deps are installed above.
+      - name: Run tests
+        run: make SKIP_DEPS=1
