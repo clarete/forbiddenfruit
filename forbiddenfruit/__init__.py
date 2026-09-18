@@ -1,6 +1,6 @@
 # forbiddenfruit - Patch built-in python objects
 #
-# Copyright (c) 2013-2020  Lincoln de Sousa <lincoln@clarete.li>
+# Copyright (c) 2013-2026  Lincoln de Sousa <lincoln@clarete.li>
 #
 # This program is dual licensed under GPLv3 and MIT.
 #
@@ -68,6 +68,8 @@ Py_ssize_t = ctypes.c_int64 if ctypes.sizeof(ctypes.c_void_p) == 8 else ctypes.c
 tp_as_dict = {}
 # container to cfunc callbacks
 tp_func_dict = {}
+# saved tp_vectorcall slots for types whose __new__ has been cursed
+tp_vectorcall_dict = {}
 
 
 class PyObject(ctypes.Structure):
@@ -227,7 +229,21 @@ PyTypeObject._fields_ = [
     ('tp_init', ctypes.c_void_p),  # Type not declared yet
     ('tp_alloc', ctypes.c_void_p),  # Type not declared yet
     ('tp_new', ctypes.CFUNCTYPE(PyObject_p, PyObject_p, PyObject_p, ctypes.c_void_p)),
-    # More struct fields follow but aren't declared here yet ...
+    ('tp_free', ctypes.c_void_p),
+    ('tp_is_gc', ctypes.c_void_p),
+    ('tp_bases', ctypes.c_void_p),
+    ('tp_mro', ctypes.c_void_p),
+    ('tp_cache', ctypes.c_void_p),
+    ('tp_subclasses', ctypes.c_void_p),
+    ('tp_weaklist', ctypes.c_void_p),
+    ('tp_del', ctypes.c_void_p),
+    ('tp_version_tag', ctypes.c_uint),
+    ('tp_finalize', ctypes.c_void_p),
+    # tp_vectorcall is the last slot we care about: on CPython 3.8+ some
+    # immutable built-ins (str, bytes, tuple, ...) carry a fast-path
+    # constructor here that bypasses tp_new. Fields declared after it
+    # (tp_watched, tp_versions_used, ...) vary by version and are omitted.
+    ('tp_vectorcall', ctypes.c_void_p),
 ]
 
 
@@ -396,6 +412,16 @@ def _curse_special(klass, attr, func):
         tp_func_dict[(klass, attr)] = cfunc
         setattr(tyobj, impl_method, cfunc)
 
+        if attr == '__new__':
+            # Since CPython 3.13, immutable builtins like str, bytes, tuple,
+            # etc will get their `tp_vectorcall` attribute set with a fast
+            # path constructor that bypasses tp_new, so e.g. `str(x)` would
+            # ignore the cursed `__new__`.
+            if klass not in tp_vectorcall_dict:
+                tp_vectorcall_dict[klass] = tyobj.tp_vectorcall
+            tyobj.tp_vectorcall = None
+            ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
+
 def _revert_special(klass, attr):
     tp_as_name, impl_method = override_dict[attr]
     tyobj = PyTypeObject.from_address(id(klass))
@@ -419,6 +445,11 @@ def _revert_special(klass, attr):
 
             cfunc = tp_as_dict[(klass, attr)]
             setattr(tyobj, impl_method, cfunc)
+
+    if attr == '__new__' and klass in tp_vectorcall_dict:
+        # restore the fast-path constructor we disabled while cursing __new__
+        tyobj.tp_vectorcall = tp_vectorcall_dict.pop(klass)
+        ctypes.pythonapi.PyType_Modified(ctypes.py_object(klass))
 
 
 def curse(klass, attr, value, hide_from_dir=False):
